@@ -7,10 +7,10 @@ import os
 
 app = FastAPI()
 
-# CORS – frontend 
+# CORS – frontend (GitHub Pages) က ခေါ်လို့ရအောင်
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],  # production မှာ github.io URL သာထည့်လို့ရတယ်
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -19,7 +19,7 @@ app.add_middleware(
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-# optional: direct file serve 
+# optional: direct file serve (debuging အတွက်)
 app.mount("/files", StaticFiles(directory=DOWNLOAD_DIR), name="files")
 
 
@@ -28,7 +28,7 @@ def root():
     return {"status": "ok", "message": "ThuYaAungZaw Video Downloader API"}
 
 
-# ---------- 1) Formats list (720p / 1080p) ----------
+# ---------- 1) Formats list (720p / 1080p... ရွေးဖို့) ----------
 
 @app.get("/formats")
 def get_formats(url: str):
@@ -47,7 +47,7 @@ def get_formats(url: str):
 
         formats = []
         for f in info.get("formats", []):
-          
+            # video + audio ပါပြီး mp4 only သာထားမယ်
             if f.get("vcodec") == "none":
                 continue
             if f.get("acodec") == "none":
@@ -75,6 +75,7 @@ def get_formats(url: str):
                 }
             )
 
+        # resolution မြင့်ဆုံးက အပေါ်ဆုံး ဖြစ်အောင် sort
         def sort_key(x):
             text = x["label"]
             if "p" in text:
@@ -134,6 +135,7 @@ def get_file(filename: str):
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
 
+    # attachment ဆိုတော့ browser က download dialog ပိုအချိုးများ
     return FileResponse(
         file_path,
         media_type="video/mp4",
