@@ -7,10 +7,10 @@ import os
 
 app = FastAPI()
 
-# CORS – frontend (GitHub Pages) က ခေါ်လို့ရအောင်
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # production မှာ github.io URL သာထည့်လို့ရတယ်
+    allow_origins=["*"],  #
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -19,7 +19,7 @@ app.add_middleware(
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-# optional: direct file serve (debuging အတွက်)
+
 app.mount("/files", StaticFiles(directory=DOWNLOAD_DIR), name="files")
 
 
@@ -27,8 +27,6 @@ app.mount("/files", StaticFiles(directory=DOWNLOAD_DIR), name="files")
 def root():
     return {"status": "ok", "message": "ThuYaAungZaw Video Downloader API"}
 
-
-# ---------- 1) Formats list (720p / 1080p... ရွေးဖို့) ----------
 
 @app.get("/formats")
 def get_formats(url: str):
@@ -46,36 +44,35 @@ def get_formats(url: str):
             info = ydl.extract_info(url, download=False)
 
         formats = []
+
         for f in info.get("formats", []):
-            # video + audio ပါပြီး mp4 only သာထားမယ်
+       
             if f.get("vcodec") == "none":
                 continue
-            if f.get("acodec") == "none":
-                continue
+
+        
             if f.get("ext") != "mp4":
                 continue
 
             height = f.get("height")
             fps = f.get("fps")
-            filesize = f.get("filesize") or f.get("filesize_approx")
-
             label_parts = []
+
             if height:
                 label_parts.append(f"{height}p")
             if fps:
                 label_parts.append(f"{fps}fps")
 
-            label = " ".join(label_parts) or f.get("format_note") or f.get("format_id")
+            label = " ".join(label_parts) or f.get("format_id")
 
             formats.append(
                 {
                     "format_id": f.get("format_id"),
                     "label": label,
-                    "filesize": filesize,
                 }
             )
 
-        # resolution မြင့်ဆုံးက အပေါ်ဆုံး ဖြစ်အောင် sort
+  
         def sort_key(x):
             text = x["label"]
             if "p" in text:
@@ -95,12 +92,9 @@ def get_formats(url: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# ---------- 2) download chosen format ----------
-
 def download_with_ytdlp(url: str, format_id: str) -> str:
     ydl_opts = {
-        "format": format_id,
+     
         "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
         "quiet": True,
         "noplaylist": True,
@@ -127,7 +121,7 @@ def download(url: str, format_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ---------- 3) Serve file as download ----------
+
 
 @app.get("/file/{filename}")
 def get_file(filename: str):
@@ -135,7 +129,6 @@ def get_file(filename: str):
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
 
-    # attachment ဆိုတော့ browser က download dialog ပိုအချိုးများ
     return FileResponse(
         file_path,
         media_type="video/mp4",
