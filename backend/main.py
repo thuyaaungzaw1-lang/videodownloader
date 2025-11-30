@@ -7,10 +7,10 @@ import os
 
 app = FastAPI()
 
-
+# ---------------------- CORS ----------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  #
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -18,7 +18,6 @@ app.add_middleware(
 
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-
 
 app.mount("/files", StaticFiles(directory=DOWNLOAD_DIR), name="files")
 
@@ -28,101 +27,83 @@ def root():
     return {"status": "ok", "message": "ThuYaAungZaw Video Downloader API"}
 
 
+# ---------------------- FORMATS ----------------------
 @app.get("/formats")
 def get_formats(url: str):
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
 
-ydl_opts = {
-    "quiet": True,
-    "skip_download": True,
-    "nocheckcertificate": True,
-
-    # 💡 YouTube cipher bypass
-    "extractor_args": {
-        "youtube": {
-            "skip": ["dash", "hls"],
-            "player_client": ["web"],
-        }
-    },
-}
+    # YouTube progressive safe mode (no DASH, no HLS)
+    ydl_opts = {
+        "quiet": True,
+        "skip_download": True,
+        "nocheckcertificate": True,
+        "extractor_args": {
+            "youtube": {
+                "skip": ["dash", "hls"],
+                "player_client": ["web"],
+            }
+        },
+    }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-        ...
-
 
         formats = []
-
         for f in info.get("formats", []):
-       
             if f.get("vcodec") == "none":
                 continue
-
-        
             if f.get("ext") != "mp4":
                 continue
 
             height = f.get("height")
             fps = f.get("fps")
-            label_parts = []
-
+            label = ""
             if height:
-                label_parts.append(f"{height}p")
+                label += f"{height}p"
             if fps:
-                label_parts.append(f"{fps}fps")
+                label += f" {fps}fps"
 
-            label = " ".join(label_parts) or f.get("format_id")
+            formats.append({
+                "format_id": f.get("format_id"),
+                "label": label if label else f.get("format_id")
+            })
 
-            formats.append(
-                {
-                    "format_id": f.get("format_id"),
-                    "label": label,
-                }
-            )
-
-  
-        def sort_key(x):
-            text = x["label"]
-            if "p" in text:
-                try:
-                    return int(text.split("p")[0])
-                except ValueError:
-                    return 0
-            return 0
-
-        formats.sort(key=sort_key, reverse=True)
+        # Sort high → low
+        formats.sort(
+            key=lambda x: int(x["label"].split("p")[0]) if "p" in x["label"] else 0,
+            reverse=True
+        )
 
         if not formats:
-            raise HTTPException(status_code=404, detail="No downloadable formats found")
+            raise HTTPException(status_code=404, detail="No formats found")
 
         return {"formats": formats}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def download_with_ytdlp(url: str, format_id: str) -> str:
-ydl_opts = {
-    "format": format_id,
-    "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
-    "quiet": True,
-    "noplaylist": True,
-    "nocheckcertificate": True,
 
-    "extractor_args": {
-        "youtube": {
-            "skip": ["dash", "hls"],
-            "player_client": ["web"],
-        }
-    },
-}
+# ---------------------- DOWNLOAD ----------------------
+def download_with_ytdlp(url: str, format_id: str) -> str:
+    ydl_opts = {
+        "format": format_id,
+        "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
+        "quiet": True,
+        "noplaylist": True,
+        "nocheckcertificate": True,
+        "extractor_args": {
+            "youtube": {
+                "skip": ["dash", "hls"],
+                "player_client": ["web"],
+            }
+        },
+    }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
-        return os.path.basename(filename)
-
+        return os.path.basename(ydl.prepare_filename(info))
 
 
 @app.get("/download")
@@ -139,16 +120,11 @@ def download(url: str, format_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-
+# ---------------------- SERVE FILE ----------------------
 @app.get("/file/{filename}")
 def get_file(filename: str):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
 
-    return FileResponse(
-        file_path,
-        media_type="video/mp4",
-        filename=filename,
-    )
+    return FileResponse(file_path, media_type="video/mp4", filename=filename)
