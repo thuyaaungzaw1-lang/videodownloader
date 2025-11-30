@@ -33,17 +33,19 @@ def get_formats(url: str):
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
 
-    ydl_opts = {
-        "quiet": True,
-        "skip_download": True,
-        "nocheckcertificate": True,
-        # 💡 YouTube ကို android clientလို ခေါ်မယ်
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android"]
-            }
-        },
-    }
+ydl_opts = {
+    "quiet": True,
+    "skip_download": True,
+    "nocheckcertificate": True,
+
+    # 💡 YouTube cipher bypass
+    "extractor_args": {
+        "youtube": {
+            "skip": ["dash", "hls"],
+            "player_client": ["web"],
+        }
+    },
+}
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -101,18 +103,20 @@ def get_formats(url: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 def download_with_ytdlp(url: str, format_id: str) -> str:
-    ydl_opts = {
-        "format": format_id,
-        "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
-        "quiet": True,
-        "noplaylist": True,
-        "nocheckcertificate": True,
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android"]
-            }
-        },
-    }
+ydl_opts = {
+    "format": format_id,
+    "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
+    "quiet": True,
+    "noplaylist": True,
+    "nocheckcertificate": True,
+
+    "extractor_args": {
+        "youtube": {
+            "skip": ["dash", "hls"],
+            "player_client": ["web"],
+        }
+    },
+}
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
