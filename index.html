@@ -221,7 +221,7 @@
       <h1>Video Downloader</h1>
       <p class="subtitle">
         Paste any <strong>TikTok</strong>, <strong>Facebook</strong> or <strong>YouTube</strong> video link,
-        choose a quality like <strong>720p</strong> or <strong>1080p</strong>, and get a direct download link.
+        choose a quality and get a direct download link.
       </p>
 
       <div class="chips">
@@ -248,7 +248,9 @@
         <span>Generate Download Link</span>
       </button>
 
-      <div id="status" class="status">Step 1 – Paste link, Step 2 – choose quality, Step 3 – download ✨</div>
+      <div id="status" class="status">
+        Step 1 – Link, Step 2 – Choose quality, Step 3 – Download ✨
+      </div>
       <div id="result" class="result"></div>
 
       <p class="disclaimer">
@@ -259,14 +261,14 @@
       <div class="footer">
         <span>Developer by <strong>ThuYaAungZaw</strong></span>
         <a href="https://www.facebook.com/thura.aungzaw.69" target="_blank" rel="noopener">
-          Facebook
+         Facebook
         </a>
       </div>
     </div>
   </div>
 
   <script>
-    // 👉 Backend API URL (Railway)
+    // 🔗 Backend API URL (Railway)
     const API_BASE = "https://videodownloader-production-0c88.up.railway.app";
 
     const urlInput = document.getElementById("url");
@@ -298,14 +300,18 @@
       resultEl.style.display = "none";
       resultEl.innerHTML = "";
       statusEl.classList.remove("error");
-      statusEl.textContent = "Step 1 – Paste link, Step 2 – choose quality, Step 3 – download ✨";
+      statusEl.textContent = "Step 1 – Link, Step 2 – Choose quality, Step 3 – Download ✨";
     });
 
     async function fetchFormats(url) {
       const reqUrl = `${API_BASE}/formats?url=${encodeURIComponent(url)}`;
       const res = await fetch(reqUrl);
-      if (!res.ok) throw new Error("Failed to load formats");
-      const data = await res.json();
+      const text = await res.text();
+      if (!res.ok) {
+        console.error("Backend error:", text);
+        throw new Error("Failed to load formats");
+      }
+      const data = JSON.parse(text);
       return data.formats || [];
     }
 
@@ -313,16 +319,11 @@
       qualitySelect.innerHTML = "";
       formats.forEach(f => {
         const opt = document.createElement("option");
-        const sizeMb = f.filesize ? ` (~${(f.filesize / (1024 * 1024)).toFixed(1)} MB)` : "";
         opt.value = f.format_id;
-        opt.textContent = `${f.label}${sizeMb}`;
+        opt.textContent = f.label;
         qualitySelect.appendChild(opt);
       });
-      if (formats.length > 0) {
-        qualitySelect.style.display = "block";
-      } else {
-        qualitySelect.style.display = "none";
-      }
+      qualitySelect.style.display = formats.length > 0 ? "block" : "none";
     }
 
     async function handleClick() {
@@ -338,18 +339,18 @@
       }
 
       try {
-        // 1st click (or URL changed) → load formats
+        // ပထမ click (သို့) URL ပြောင်းပြန် – formats ခေါ်မယ်
         if (lastFormats.length === 0 || lastUrl !== url) {
           statusEl.textContent = "Fetching available qualities…";
           lastFormats = await fetchFormats(url);
           lastUrl = url;
 
           populateQualitySelect(lastFormats);
-          statusEl.textContent = "Choose a quality above, then press the button again to download.";
-          return; // wait for second click
+          statusEl.textContent = "Choose a quality, then press the button again to download.";
+          return;
         }
 
-        // 2nd click → download using selected quality
+        // ဒုတိယ click – download
         const formatId = qualitySelect.value;
         if (!formatId) {
           statusEl.textContent = "Please choose a quality first.";
@@ -361,9 +362,12 @@
 
         const reqUrl = `${API_BASE}/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(formatId)}`;
         const res = await fetch(reqUrl);
-        if (!res.ok) throw new Error("Server returned an error.");
-
-        const data = await res.json();
+        const text = await res.text();
+        if (!res.ok) {
+          console.error("Backend error:", text);
+          throw new Error("Server returned an error.");
+        }
+        const data = JSON.parse(text);
         if (!data.download_url) throw new Error("No download URL returned.");
 
         const href = data.download_url.startsWith("http")
