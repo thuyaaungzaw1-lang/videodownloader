@@ -37,11 +37,19 @@ def get_formats(url: str):
         "quiet": True,
         "skip_download": True,
         "nocheckcertificate": True,
+        # 💡 YouTube ကို android clientလို ခေါ်မယ်
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android"]
+            }
+        },
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
+        ...
+
 
         formats = []
 
@@ -94,17 +102,23 @@ def get_formats(url: str):
 
 def download_with_ytdlp(url: str, format_id: str) -> str:
     ydl_opts = {
-     
+        "format": format_id,
         "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
         "quiet": True,
         "noplaylist": True,
         "nocheckcertificate": True,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android"]
+            }
+        },
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         filename = ydl.prepare_filename(info)
         return os.path.basename(filename)
+
 
 
 @app.get("/download")
