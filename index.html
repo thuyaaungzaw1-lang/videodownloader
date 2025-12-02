@@ -4,9 +4,37 @@
   <meta charset="UTF-8" />
   <title>Video Downloader – ThuYaAungZaw</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- PWA Meta Tags -->
+  <meta name="application-name" content="Video Downloader">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VideoDL">
+  <meta name="description" content="Download videos from TikTok, Facebook, and YouTube">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="msapplication-TileColor" content="#ff2e2e">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="theme-color" content="#ff2e2e">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="icon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icon-16x16.png">
+  <link rel="shortcut icon" href="icon-96x96.png">
+  
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-192x192.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icon-152x152.png">
+
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at top left, #1a0000, #0a0000 55%, #000000 100%);
@@ -173,6 +201,7 @@
       transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
       position: relative;
       overflow: hidden;
+      min-height: 44px;
     }
     button::before {
       content: '';
@@ -248,9 +277,47 @@
       text-decoration: underline;
       color: #ff8c8c;
     }
+    
+    /* PWA Install Button */
+    #installButton {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: linear-gradient(90deg, #8b0000, #ff2e2e);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3);
+      display: none;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3); }
+      50% { box-shadow: 0 4px 20px rgba(255, 46, 46, 0.6); }
+      100% { box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3); }
+    }
+    
+    /* Standalone mode styles */
+    body.standalone-mode {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
     @media (max-width: 520px) {
       .card { padding: 22px 18px 16px; }
       h1 { font-size: 21px; }
+      #installButton {
+        bottom: 10px;
+        right: 10px;
+        padding: 8px 16px;
+        font-size: 13px;
+      }
     }
   </style>
 </head>
@@ -271,7 +338,7 @@
       <div class="chips">
         <span class="chip"><span class="chip-dot"></span>TikTok / Facebook / YouTube</span>
         <span class="chip"><span class="chip-dot"></span>Quality selection</span>
-        <span class="chip"><span class="chip-dot"></span>No allow the photo+video (example.tiktok)</span>
+        <span class="chip"><span class="chip-dot"></span>No allowed photo+video(Example.Tiktok)</span>
       </div>
 
       <label for="url">Video URL</label>
@@ -311,6 +378,9 @@
     </div>
   </div>
 
+  <!-- PWA Install Button -->
+  <button id="installButton" style="display: none;">📱 Install App</button>
+
   <script>
     // 🔗 Backend API URL (Railway)
     const API_BASE = "https://videodownloader-production-0c88.up.railway.app";
@@ -321,6 +391,7 @@
     const resultEl = document.getElementById("result");
     const downloadBtn = document.getElementById("download-btn");
     const qualitySelect = document.getElementById("quality");
+    const installButton = document.getElementById("installButton");
 
     let lastFormats = [];
     let lastUrl = "";
@@ -440,6 +511,108 @@
         handleClick();
       }
     });
+
+    // ==================== PWA FUNCTIONALITY ====================
+    
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(registration => {
+            console.log('✅ Service Worker registered with scope:', registration.scope);
+            
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('🔄 New service worker found!');
+              
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New update available
+                  if (confirm('🆕 New version available! Reload to update?')) {
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          })
+          .catch(error => {
+            console.log('❌ Service Worker registration failed:', error);
+          });
+      });
+    }
+    
+    // Handle PWA Installation
+    let deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome from automatically showing the prompt
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // Show install button
+      installButton.style.display = 'block';
+      
+      installButton.addEventListener('click', () => {
+        installButton.style.display = 'none';
+        
+        // Show the install prompt
+        deferredPrompt.prompt();
+        
+        // Wait for user response
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('✅ User installed the PWA');
+            statusEl.textContent = '🎉 App installed successfully!';
+            statusEl.style.color = '#22c55e';
+          } else {
+            console.log('❌ User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+        });
+      });
+    });
+    
+    // Track app installation
+    window.addEventListener('appinstalled', () => {
+      console.log('📱 PWA was installed');
+      installButton.style.display = 'none';
+      
+      // Show welcome message
+      setTimeout(() => {
+        statusEl.textContent = '🎉 Welcome to Video Downloader App!';
+        statusEl.style.color = '#22c55e';
+      }, 1000);
+    });
+    
+    // Check if running in standalone mode
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
+      console.log('📱 Running in standalone mode');
+      document.body.classList.add('standalone-mode');
+    }
+    
+    // Online/Offline Detection
+    window.addEventListener('online', () => {
+      statusEl.textContent = '🌐 Back online!';
+      setTimeout(() => {
+        if (statusEl.textContent === '🌐 Back online!') {
+          statusEl.textContent = 'Step 1 – Link, Step 2 – Choose quality, Step 3 – Download ✨';
+        }
+      }, 2000);
+    });
+    
+    window.addEventListener('offline', () => {
+      statusEl.textContent = '⚠️ You are offline. Using cached version.';
+      statusEl.style.color = '#ffa500';
+    });
+    
+    // Check initial network status
+    if (!navigator.onLine) {
+      statusEl.textContent = '⚠️ You are offline. Using cached version.';
+      statusEl.style.color = '#ffa500';
+    }
+    
   </script>
 </body>
 </html>
