@@ -17,24 +17,22 @@
   <meta name="msapplication-tap-highlight" content="no">
   <meta name="theme-color" content="#ff2e2e">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <<head>
+  <!-- ... တခြား meta tags တွေ ... -->
   
-  <!-- Manifest -->
+  <!-- MAIN iOS ICON (အရေးကြီးဆုံး) -->
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  
+  <!-- Android/Chrome အတွက် -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  
+  <!-- Browser tab icon -->
+  <link rel="shortcut icon" href="favicon.ico">
+  
+  <!-- Manifest ကိုလည်း update လုပ်မယ် -->
   <link rel="manifest" href="manifest.json">
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="icon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="icon-16x16.png">
-  <link rel="shortcut icon" href="icon-96x96.png">
-  
-  <!-- Apple Touch Icons -->
-  <link rel="apple-touch-icon" href="icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="icon-192x192.png">
-  <link rel="apple-touch-icon" sizes="167x167" href="icon-152x152.png">
-
+</head>
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at top left, #1a0000, #0a0000 55%, #000000 100%);
