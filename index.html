@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="VideoDL">
   <meta name="theme-color" content="#ff2e2e">
 
-  <!-- iOS main icon (required) -->
+  <!-- iOS main icon -->
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180x180.png">
   <link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167x167.png">
   <link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152x152.png">
@@ -24,296 +24,295 @@
   <!-- Favicon -->
   <link rel="shortcut icon" href="favicon.ico">
 
-  <!-- Your manifest -->
+  <!-- Manifest -->
   <link rel="manifest" href="manifest.json">
 </head>
 
-  <style>
-    :root {
-      --bg-gradient: radial-gradient(circle at top left, #1a0000, #0a0000 55%, #000000 100%);
-      --card-bg: rgba(20, 0, 0, 0.85);
-      --accent: #ff2e2e;
-      --accent-soft: rgba(255, 46, 46, 0.2);
-      --text-main: #f0e6e6;
-      --text-muted: #b8a6a6;
-      --danger: #ff6b6b;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      min-height: 100vh;
-      background: 
-        linear-gradient(rgba(10, 0, 0, 0.85), rgba(0, 0, 0, 0.9)),
-        url('https://wallpapers.com/images/featured-full/kaneki-xsv5e4ut8mxmqae9.jpg') center/cover fixed;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
-      color: var(--text-main);
-      position: relative;
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: 
-        radial-gradient(circle at 20% 30%, rgba(255, 46, 46, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(139, 0, 0, 0.1) 0%, transparent 50%);
-      pointer-events: none;
-    }
-    .wrapper { max-width: 520px; width: 100%; z-index: 1; }
-    .card {
-      background: var(--card-bg);
-      border-radius: 24px;
-      padding: 24px 22px 18px;
-      box-shadow:
-        0 25px 70px rgba(10, 0, 0, 0.9),
-        0 0 0 1px rgba(139, 0, 0, 0.4);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 46, 46, 0.1);
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(30, 0, 0, 0.9);
-      border: 1px solid rgba(139, 0, 0, 0.6);
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .badge-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #ff2e2e;
-      box-shadow: 0 0 12px rgba(255, 46, 46, 0.9);
-    }
-    h1 { 
-      font-size: 23px; 
-      margin-top: 14px; 
-      margin-bottom: 6px; 
-      background: linear-gradient(90deg, #ff2e2e, #ff8c8c);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin-bottom: 18px;
-    }
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-    .chip {
-      font-size: 11px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: rgba(30, 0, 0, 0.9);
-      border: 1px solid rgba(139, 0, 0, 0.4);
-      color: var(--text-muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .chip-dot {
-      width: 6px; height: 6px; border-radius: 999px; background: var(--accent);
-    }
-    label {
-      display: block;
-      font-size: 12px;
-      margin-bottom: 6px;
-      color: var(--text-muted);
-    }
-    .input-wrapper { position: relative; margin-bottom: 14px; }
-    input[type="url"] {
-      width: 100%;
-      padding: 12px 90px 12px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(139, 0, 0, 0.7);
-      background: rgba(20, 0, 0, 0.9);
-      color: var(--text-main);
-      font-size: 14px;
-      outline: none;
-      transition: border 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-    }
-    input[type="url"]::placeholder { color: #8b6b6b; font-size: 13px; }
-    input[type="url"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(255, 46, 46, 0.4);
-      background: rgba(30, 0, 0, 1);
-    }
-    .service-pill {
-      position: absolute;
-      top: 50%;
-      right: 8px;
-      transform: translateY(-50%);
-      font-size: 10px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      border: 1px solid rgba(255, 46, 46, 0.4);
-    }
-    select {
-      width: 100%;
-      margin-top: 8px;
-      padding: 9px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(139, 0, 0, 0.7);
-      background: rgba(20, 0, 0, 0.9);
-      color: var(--text-main);
-      font-size: 13px;
-      display: none;
-    }
-    button {
-      width: 100%;
-      border: none;
-      border-radius: 14px;
-      padding: 11px 14px;
-      margin-top: 10px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      background: linear-gradient(90deg, #8b0000, #ff2e2e, #ff6b6b);
-      color: white;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow:
-        0 16px 45px rgba(10, 0, 0, 0.9),
-        0 0 0 1px rgba(255, 46, 46, 0.4);
-      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
-      position: relative;
-      overflow: hidden;
-      min-height: 44px;
-    }
-    button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-      transition: left 0.6s;
-    }
-    button:hover::before {
-      left: 100%;
-    }
-    button:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.1);
-    }
-    button:active {
-      transform: translateY(0);
-      box-shadow:
-        0 10px 30px rgba(10, 0, 0, 0.95),
-        0 0 0 1px rgba(255, 46, 46, 0.4);
-    }
-    .btn-icon { font-size: 15px; }
-    .status {
-      font-size: 12px;
-      margin-top: 10px;
-      min-height: 18px;
-      color: var(--text-muted);
-    }
-    .status.error { color: var(--danger); }
-    .result {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(30, 0, 0, 0.9);
-      border: 1px dashed rgba(139, 0, 0, 0.6);
-      font-size: 13px;
-      display: none;
-    }
-    .result a {
-      color: var(--accent);
-      font-weight: 500;
-      text-decoration: none;
-    }
-    .result a:hover { 
-      text-decoration: underline;
-      color: #ff8c8c;
-    }
-    .disclaimer {
-      margin-top: 12px;
-      font-size: 11px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-    .footer {
-      margin-top: 16px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--text-muted);
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .footer a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .footer a:hover { 
-      text-decoration: underline;
-      color: #ff8c8c;
-    }
-    
-    /* PWA Install Button */
+<style>
+  :root {
+    --bg-gradient: radial-gradient(circle at top left, #1a0000, #0a0000 55%, #000000 100%);
+    --card-bg: rgba(20, 0, 0, 0.85);
+    --accent: #ff2e2e;
+    --accent-soft: rgba(255, 46, 46, 0.2);
+    --text-main: #f0e6e6;
+    --text-muted: #b8a6a6;
+    --danger: #ff6b6b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    min-height: 100vh;
+    background: 
+      linear-gradient(rgba(10, 0, 0, 0.85), rgba(0, 0, 0, 0.9)),
+      url('https://wallpapers.com/images/featured-full/kaneki-xsv5e4ut8mxmqae9.jpg') center/cover fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    color: var(--text-main);
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 30%, rgba(255, 46, 46, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(139, 0, 0, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .wrapper { max-width: 520px; width: 100%; z-index: 1; }
+  .card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 24px 22px 18px;
+    box-shadow:
+      0 25px 70px rgba(10, 0, 0, 0.9),
+      0 0 0 1px rgba(139, 0, 0, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 46, 46, 0.1);
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(30, 0, 0, 0.9);
+    border: 1px solid rgba(139, 0, 0, 0.6);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #ff2e2e;
+    box-shadow: 0 0 12px rgba(255, 46, 46, 0.9);
+  }
+  h1 { 
+    font-size: 23px; 
+    margin-top: 14px; 
+    margin-bottom: 6px; 
+    background: linear-gradient(90deg, #ff2e2e, #ff8c8c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .chip {
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(30, 0, 0, 0.9);
+    border: 1px solid rgba(139, 0, 0, 0.4);
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chip-dot {
+    width: 6px; height: 6px; border-radius: 999px; background: var(--accent);
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+  }
+  .input-wrapper { position: relative; margin-bottom: 14px; }
+  input[type="url"] {
+    width: 100%;
+    padding: 12px 90px 12px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(139, 0, 0, 0.7);
+    background: rgba(20, 0, 0, 0.9);
+    color: var(--text-main);
+    font-size: 14px;
+    outline: none;
+    transition: border 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  }
+  input[type="url"]::placeholder { color: #8b6b6b; font-size: 13px; }
+  input[type="url"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(255, 46, 46, 0.4);
+    background: rgba(30, 0, 0, 1);
+  }
+  .service-pill {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 1px solid rgba(255, 46, 46, 0.4);
+  }
+  select {
+    width: 100%;
+    margin-top: 8px;
+    padding: 9px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 0, 0, 0.7);
+    background: rgba(20, 0, 0, 0.9);
+    color: var(--text-main);
+    font-size: 13px;
+    display: none;
+  }
+  button {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 11px 14px;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    background: linear-gradient(90deg, #8b0000, #ff2e2e, #ff6b6b);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow:
+      0 16px 45px rgba(10, 0, 0, 0.9),
+      0 0 0 1px rgba(255, 46, 46, 0.4);
+    transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 44px;
+  }
+  button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+  }
+  button:hover::before {
+    left: 100%;
+  }
+  button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+  button:active {
+    transform: translateY(0);
+    box-shadow:
+      0 10px 30px rgba(10, 0, 0, 0.95),
+      0 0 0 1px rgba(255, 46, 46, 0.4);
+  }
+  .btn-icon { font-size: 15px; }
+  .status {
+    font-size: 12px;
+    margin-top: 10px;
+    min-height: 18px;
+    color: var(--text-muted);
+  }
+  .status.error { color: var(--danger); }
+  .result {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(30, 0, 0, 0.9);
+    border: 1px dashed rgba(139, 0, 0, 0.6);
+    font-size: 13px;
+    display: none;
+  }
+  .result a {
+    color: var(--accent);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .result a:hover { 
+    text-decoration: underline;
+    color: #ff8c8c;
+  }
+  .disclaimer {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .footer {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .footer a:hover { 
+    text-decoration: underline;
+    color: #ff8c8c;
+  }
+  
+  /* PWA Install Button */
+  #installButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #8b0000, #ff2e2e);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3);
+    display: none;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3); }
+    50% { box-shadow: 0 4px 20px rgba(255, 46, 46, 0.6); }
+    100% { box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3); }
+  }
+  
+  body.standalone-mode {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  @media (max-width: 520px) {
+    .card { padding: 22px 18px 16px; }
+    h1 { font-size: 21px; }
     #installButton {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background: linear-gradient(90deg, #8b0000, #ff2e2e);
-      color: white;
-      border: none;
-      border-radius: 25px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3);
-      display: none;
-      animation: pulse 2s infinite;
+      bottom: 10px;
+      right: 10px;
+      padding: 8px 16px;
+      font-size: 13px;
     }
-    
-    @keyframes pulse {
-      0% { box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3); }
-      50% { box-shadow: 0 4px 20px rgba(255, 46, 46, 0.6); }
-      100% { box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3); }
-    }
-    
-    /* Standalone mode styles */
-    body.standalone-mode {
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-    
-    @media (max-width: 520px) {
-      .card { padding: 22px 18px 16px; }
-      h1 { font-size: 21px; }
-      #installButton {
-        bottom: 10px;
-        right: 10px;
-        padding: 8px 16px;
-        font-size: 13px;
-      }
-    }
-  </style>
-</head>
+  }
+</style>
+
 <body>
   <div class="wrapper">
     <div class="card">
@@ -389,7 +388,12 @@
     let lastFormats = [];
     let lastUrl = "";
 
-    // PWA (Add to Home Screen) ထဲကလား browser ထဲလား စစ်ဖို့ helper
+    // Helper: iOS check
+    function isiOS() {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent);
+    }
+
+    // Helper: PWA standalone check
     function isStandalone() {
       return window.matchMedia('(display-mode: standalone)').matches ||
              window.navigator.standalone === true;
@@ -453,7 +457,7 @@
       }
 
       try {
-        // ပထမ click (သို့) URL ပြောင်းပြန် – formats ခေါ်မယ်
+        // First click (or URL changed) – fetch formats
         if (lastFormats.length === 0 || lastUrl !== url) {
           statusEl.textContent = "Checking available qualities…";
           lastFormats = await fetchFormats(url);
@@ -464,7 +468,7 @@
           return;
         }
 
-        // ဒုတိယ click – download
+        // Second click – download
         const formatId = qualitySelect.value;
         if (!formatId) {
           statusEl.textContent = "Please choose a quality first.";
@@ -488,26 +492,32 @@
           ? data.download_url
           : API_BASE.replace(/\/+$/, "") + data.download_url;
 
+              // ❗ iOS + PWA mode – alert ပြပြီး Safari ကိုဖွင့်ကြိုးစားမယ်
+        if (isiOS() && isStandalone()) {
+          statusEl.classList.add("error");
+          statusEl.textContent = "Safari ထဲကနေ download ဆွဲလို့ရအောင် ပြောင်းလိုက်ပါပြီ…";
+
+          alert("iPhone App (Add to Home Screen) ထဲကနေတော့ download မကောင်းဘူး။\nအခု Safari ထဲ ဖွင့်ပေးမယ်၊ အဲ့ထဲကနေ ဆွဲပါနော် 🙏");
+
+          // Safari ကိုဖွင့်ကြိုးစားမယ် (best effort)
+          // 1) ဒီကနေ သွားမယ်ဆိုရင် file URL ကို Safari/Browser ထဲမှာဖွင့်မယ်
+          // 2) iOS version အချို့မှာ PWA အတွင်းမှာပဲ ဖွင့်ဖြစ်နိုင်သေးတယ် – ဒါက system အေပေါ်မူတည်
+          window.open(href, "_blank");
+
+          return;
+        }
+
+
+        // Normal browser / Android / desktop – direct link
         resultEl.style.display = "block";
         const qualityText = qualitySelect.options[qualitySelect.selectedIndex].textContent;
         resultEl.innerHTML = `
           ✅ Download link ready (${qualityText}):<br />
-          <a id="download-link" href="${href}" target="_blank" rel="noopener" download>
+          <a href="${href}" target="_blank" rel="noopener" download>
             Click here to download your video
           </a>
         `;
         statusEl.textContent = "Success! Your download link is ready.";
-
-        // PWA (Add to Home Screen) ထဲကနေဆိုရင် Safari ကိုပြောင်းဖွင့်ပြီး download လုပ်မယ်
-        if (isStandalone()) {
-          const dlLink = document.getElementById("download-link");
-          if (dlLink) {
-            dlLink.addEventListener("click", (e) => {
-              e.preventDefault();
-              window.open(href, "_blank");
-            });
-          }
-        }
       } catch (err) {
         console.error(err);
         statusEl.textContent = "Something went wrong. Please try again.";
@@ -538,7 +548,6 @@
               
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New update available
                   if (confirm('🆕 New version available! Reload to update?')) {
                     window.location.reload();
                   }
@@ -556,20 +565,13 @@
     let deferredPrompt;
     
     window.addEventListener('beforeinstallprompt', (e) => {
-      // Prevent Chrome from automatically showing the prompt
       e.preventDefault();
       deferredPrompt = e;
-      
-      // Show install button
       installButton.style.display = 'block';
       
       installButton.addEventListener('click', () => {
         installButton.style.display = 'none';
-        
-        // Show the install prompt
         deferredPrompt.prompt();
-        
-        // Wait for user response
         deferredPrompt.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
             console.log('✅ User installed the PWA');
@@ -587,15 +589,13 @@
     window.addEventListener('appinstalled', () => {
       console.log('📱 PWA was installed');
       installButton.style.display = 'none';
-      
-      // Show welcome message
       setTimeout(() => {
         statusEl.textContent = '🎉 Welcome to Video Downloader App!';
         statusEl.style.color = '#22c55e';
       }, 1000);
     });
     
-    // Check if running in standalone mode
+    // Set standalone class if in PWA
     if (isStandalone()) {
       console.log('📱 Running in standalone mode');
       document.body.classList.add('standalone-mode');
@@ -616,12 +616,10 @@
       statusEl.style.color = '#ffa500';
     });
     
-    // Check initial network status
     if (!navigator.onLine) {
       statusEl.textContent = '⚠️ You are offline. Using cached version.';
       statusEl.style.color = '#ffa500';
     }
-    
   </script>
 </body>
 </html>
