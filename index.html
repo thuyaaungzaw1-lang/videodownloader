@@ -389,6 +389,12 @@
     let lastFormats = [];
     let lastUrl = "";
 
+    // PWA (Add to Home Screen) ထဲကလား browser ထဲလား စစ်ဖို့ helper
+    function isStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+             window.navigator.standalone === true;
+    }
+
     function detectService(url) {
       if (!url) return "Auto detect";
       const u = url.toLowerCase();
@@ -486,11 +492,22 @@
         const qualityText = qualitySelect.options[qualitySelect.selectedIndex].textContent;
         resultEl.innerHTML = `
           ✅ Download link ready (${qualityText}):<br />
-          <a href="${href}" target="_blank" rel="noopener" download>
+          <a id="download-link" href="${href}" target="_blank" rel="noopener" download>
             Click here to download your video
           </a>
         `;
         statusEl.textContent = "Success! Your download link is ready.";
+
+        // PWA (Add to Home Screen) ထဲကနေဆိုရင် Safari ကိုပြောင်းဖွင့်ပြီး download လုပ်မယ်
+        if (isStandalone()) {
+          const dlLink = document.getElementById("download-link");
+          if (dlLink) {
+            dlLink.addEventListener("click", (e) => {
+              e.preventDefault();
+              window.open(href, "_blank");
+            });
+          }
+        }
       } catch (err) {
         console.error(err);
         statusEl.textContent = "Something went wrong. Please try again.";
@@ -579,8 +596,7 @@
     });
     
     // Check if running in standalone mode
-    if (window.matchMedia('(display-mode: standalone)').matches || 
-        window.navigator.standalone === true) {
+    if (isStandalone()) {
       console.log('📱 Running in standalone mode');
       document.body.classList.add('standalone-mode');
     }
