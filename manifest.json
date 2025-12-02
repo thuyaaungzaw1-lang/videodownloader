@@ -2,7 +2,7 @@
 [file content begin]
 {
   "name": "Video Downloader - ThuYaAungZaw",
-  "short_name": "VideoDL",
+  "short_name": "VideoDownLoader",
   "description": "Download videos from TikTok, Facebook, and YouTube",
   "start_url": "/",
   "display": "standalone",
