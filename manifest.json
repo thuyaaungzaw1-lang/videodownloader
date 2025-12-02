@@ -1,7 +1,5 @@
-[file name]: manifest.json
-[file content begin]
 {
-  "name": "Video Downloader - ThuYaAungZaw",
+  "name": "Video Downloader",
   "short_name": "VideoDL",
   "description": "Download videos from TikTok, Facebook, and YouTube",
   "start_url": "/",
@@ -11,51 +9,45 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "icon-72.png",
       "sizes": "72x72",
       "type": "image/png"
     },
     {
-      "src": "icon.png",
+      "src": "icon-96.png",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "icon.png",
+      "src": "icon-128.png",
       "sizes": "128x128",
       "type": "image/png"
     },
     {
-      "src": "icon.png",
+      "src": "icon-144.png",
       "sizes": "144x144",
       "type": "image/png"
     },
     {
-      "src": "icon.png",
+      "src": "icon-152.png",
       "sizes": "152x152",
       "type": "image/png"
     },
     {
-      "src": "icon.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon.png",
+      "src": "icon-384.png",
       "sizes": "384x384",
       "type": "image/png"
     },
     {
-      "src": "icon.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-  "start_url": "/",
-  "display": "standalone",
-  "theme_color": "#ff2e2e",
-  "background_color": "#0a0000"
-}
   ],
   "categories": ["utilities", "productivity"],
   "shortcuts": [
@@ -67,4 +59,3 @@
     }
   ]
 }
-[file content end]
