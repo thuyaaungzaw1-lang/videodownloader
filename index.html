@@ -330,7 +330,7 @@
       <div class="chips">
         <span class="chip"><span class="chip-dot"></span>TikTok / Facebook / YouTube</span>
         <span class="chip"><span class="chip-dot"></span>Quality selection</span>
-        <span class="chip"><span class="chip-dot"></span>No allowed photo+video(Example.Tiktok)</span>
+        <span class="chip"><span class="chip-dot"></span>No allowed photo+music(Example.Tiktok)</span>
       </div>
 
       <label for="url">Video URL</label>
@@ -471,7 +471,7 @@ async function handleClick() {
 
     // Second click: generate download
     const formatId = qualitySelect.value;
-    statusEl.textContent = "Generating download link…";
+    statusEl.textContent = "Auto Downloading…";
 
     const reqUrl = `${API_BASE}/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(formatId)}`;
     const res = await fetch(reqUrl);
@@ -493,7 +493,7 @@ async function handleClick() {
     statusEl.textContent = "Downloading…";
 
   } catch (e) {
-    statusEl.textContent = "Error occurred.";
+    statusEl.textContent = "You can't download the video that has a photo and music.";
     statusEl.classList.add("error");
   }
 }
