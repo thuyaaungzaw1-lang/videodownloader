@@ -7,7 +7,7 @@ import os
 
 app = FastAPI()
 
-# --------- CORS (frontend GitHub Pages က ခေါ်ရအောင်) ----------
+# CORS allow all
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,9 +16,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Folder for saving downloads
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
+# Serve files
 app.mount("/files", StaticFiles(directory=DOWNLOAD_DIR), name="files")
 
 
@@ -27,13 +29,12 @@ def root():
     return {"status": "ok", "message": "ThuYaAungZaw Video Downloader API"}
 
 
-# --------- 1) formats endpoint ----------
+# 1) Get formats
 @app.get("/formats")
 def get_formats(url: str):
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
 
-    # yt-dlp ကို default web client နဲ့ပဲ သုံးမယ်
     ydl_opts = {
         "quiet": True,
         "skip_download": True,
@@ -47,60 +48,35 @@ def get_formats(url: str):
 
         fmts = []
         for f in info.get("formats", []):
-            # video မပါတဲ့ format တွေကျော်
             if f.get("vcodec") == "none":
                 continue
-
-            # mp4 format လိုချင်လို့ mp4 ပဲထားမယ်
             if f.get("ext") != "mp4":
                 continue
 
             height = f.get("height")
             fps = f.get("fps")
-
-            parts = []
+            label_parts = []
             if height:
-                parts.append(f"{height}p")
+                label_parts.append(f"{height}p")
             if fps:
-                parts.append(f"{fps}fps")
+                label_parts.append(f"{fps}fps")
 
-            label = " ".join(parts) if parts else f.get("format_id")
+            fmts.append({
+                "format_id": f.get("format_id"),
+                "label": " ".join(label_parts) if label_parts else f.get("format_id")
+            })
 
-            fmts.append(
-                {
-                    "format_id": f.get("format_id"),
-                    "label": label,
-                }
-            )
-
-        # resolution အမြင့်အနိမ့် 排序
-        def sort_key(x):
-            text = x["label"]
-            if "p" in text:
-                try:
-                    return int(text.split("p")[0])
-                except ValueError:
-                    return 0
-            return 0
-
-        fmts.sort(key=sort_key, reverse=True)
-
-        if not fmts:
-            raise HTTPException(status_code=404, detail="No downloadable formats found")
+        fmts.sort(key=lambda x: int(x["label"].split("p")[0]) if "p" in x["label"] else 0, reverse=True)
 
         return {"formats": fmts}
 
-    except yt_dlp.utils.DownloadError as e:
-        # YouTube မှာ protection ကြောင့်မရတဲ့ case တွေ – စာအကြောင်းရှင်းရှင်းပြန်ပေးမယ်
-        raise HTTPException(status_code=500, detail=f"Extractor error: {e}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# --------- 2) url + format_id နဲ့ ဖိုင်ကို download ဆွဲမယ် ----------
+# 2) Download with yt-dlp
 def download_with_ytdlp(url: str, format_id: str) -> str:
     ydl_opts = {
-        # frontend ကပို့လာတဲ့ format_id ကို တိတိအသုံးပြုမယ်
         "format": format_id,
         "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
         "quiet": True,
@@ -114,23 +90,24 @@ def download_with_ytdlp(url: str, format_id: str) -> str:
         return os.path.basename(filename)
 
 
+# 3) Download endpoint
 @app.get("/download")
 def download(url: str, format_id: str):
-    if not url:
-        raise HTTPException(status_code=400, detail="URL is required")
-    if not format_id:
-        raise HTTPException(status_code=400, detail="format_id is required")
+    if not url or not format_id:
+        raise HTTPException(status_code=400, detail="Missing url or format_id")
 
     try:
         filename = download_with_ytdlp(url, format_id)
-        return {"download_url": f"/file/{filename}"}
-    except yt_dlp.utils.DownloadError as e:
-        raise HTTPException(status_code=500, detail=f"Download error: {e}")
+
+        return {
+            "download_url": f"/file/{filename}",
+            "filename": filename
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# --------- 3) ဖိုင်ကို client ကို serve ပြန်ပေးမယ် ----------
+# 4) Serve file
 @app.get("/file/{filename}")
 def get_file(filename: str):
     path = os.path.join(DOWNLOAD_DIR, filename)
