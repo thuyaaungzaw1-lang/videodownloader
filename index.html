@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Video Downloader – ThuYaAungZaw</title>
+  <title>Video & MP3 Downloader – ThuYaAungZaw</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- PWA Meta Tags -->
-  <meta name="application-name" content="Video Downloader">
+  <meta name="application-name" content="Kaneki Downloader">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="VideoDL">
+  <meta name="apple-mobile-web-app-title" content="KanekiDL">
   <meta name="theme-color" content="#ff2e2e">
 
   <!-- iOS main icon -->
@@ -18,65 +18,65 @@
   <link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152x152.png">
 
   <!-- Android / Chrome -->
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
   <!-- Favicon -->
   <link rel="shortcut icon" href="favicon.ico">
-
-  <!-- Manifest -->
-  <link rel="manifest" href="manifest.json">
 </head>
 
 <style>
   :root {
-    --bg-gradient: radial-gradient(circle at top left, #1a0000, #0a0000 55%, #000000 100%);
-    --card-bg: rgba(20, 0, 0, 0.9);
     --accent: #ff2e2e;
     --accent-soft: rgba(255, 46, 46, 0.18);
-    --text-main: #f9e8e8;
+    --bg-dark: #050000;
+    --card-bg: rgba(15, 0, 0, 0.96);
+    --text-main: #fbeaea;
     --text-muted: #b89494;
     --danger: #ff6b6b;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
   body {
     font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     min-height: 100vh;
-    background: 
-      linear-gradient(rgba(10, 0, 0, 0.88), rgba(0, 0, 0, 0.96)),
+    background:
+      linear-gradient(rgba(10, 0, 0, 0.9), rgba(0, 0, 0, 0.98)),
       url('https://wallpapers.com/images/featured-full/kaneki-xsv5e4ut8mxmqae9.jpg') center/cover fixed;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 24px;
+    padding-bottom: 100px; /* bottom nav */
     color: var(--text-main);
     position: relative;
+    overflow-x: hidden;
   }
 
   body::before {
-    content: '';
+    content: "";
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-      radial-gradient(circle at 20% 30%, rgba(255, 46, 46, 0.15) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(139, 0, 0, 0.18) 0%, transparent 55%);
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255, 46, 46, 0.18) 0%, transparent 55%),
+      radial-gradient(circle at 80% 70%, rgba(139, 0, 0, 0.22) 0%, transparent 55%);
     pointer-events: none;
+    mix-blend-mode: screen;
   }
 
-  /* subtle red scan effect */
   .scanline {
     position: fixed;
     inset: 0;
-    background-image: linear-gradient(to bottom, rgba(255,0,0,0.18) 0, transparent 2px);
+    background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0.15) 0, transparent 2px);
     background-size: 100% 4px;
-    mix-blend-mode: soft-light;
     opacity: 0.12;
+    mix-blend-mode: soft-light;
     pointer-events: none;
     animation: scan 7s linear infinite;
   }
@@ -86,58 +86,61 @@
     100% { transform: translateY(8px); }
   }
 
-  /* small floating orbs */
   .orb {
     position: fixed;
     border-radius: 999px;
-    background: radial-gradient(circle, rgba(255,46,46,0.7), transparent 60%);
+    background: radial-gradient(circle, rgba(255, 46, 46, 0.7), transparent 60%);
     filter: blur(2px);
     mix-blend-mode: screen;
     pointer-events: none;
     opacity: 0.4;
   }
-  .orb.orb-1 { width: 90px; height: 90px; top: 8%; left: 6%; animation: float1 12s ease-in-out infinite alternate; }
-  .orb.orb-2 { width: 70px; height: 70px; bottom: 10%; right: 10%; animation: float2 10s ease-in-out infinite alternate; }
+
+  .orb-1 { width: 90px; height: 90px; top: 12%; left: 6%; animation: float1 12s ease-in-out infinite alternate; }
+  .orb-2 { width: 70px; height: 70px; bottom: 10%; right: 10%; animation: float2 10s ease-in-out infinite alternate; }
 
   @keyframes float1 {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(16px, 10px, 0); }
+    0% { transform: translate3d(0,0,0); }
+    100% { transform: translate3d(16px,10px,0); }
   }
   @keyframes float2 {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-14px, -12px, 0); }
+    0% { transform: translate3d(0,0,0); }
+    100% { transform: translate3d(-14px,-12px,0); }
   }
 
-  .wrapper { max-width: 520px; width: 100%; z-index: 1; }
+  .wrapper {
+    max-width: 520px;
+    width: 100%;
+    z-index: 1;
+  }
 
   .card {
-    background: radial-gradient(circle at top left, rgba(40,0,0,0.95), rgba(0,0,0,0.98));
+    background: radial-gradient(circle at top left, rgba(40, 0, 0, 0.96), rgba(0, 0, 0, 0.98));
     border-radius: 24px;
-    padding: 24px 22px 18px;
+    padding: 22px 20px 18px;
+    border: 1px solid rgba(255, 46, 46, 0.4);
     box-shadow:
-      0 0 20px rgba(255, 46, 46, 0.35),
-      0 25px 70px rgba(0, 0, 0, 0.96);
+      0 0 18px rgba(255, 46, 46, 0.45),
+      0 24px 60px rgba(0, 0, 0, 0.98);
     backdrop-filter: blur(22px);
-    border: 1px solid rgba(255, 46, 46, 0.35);
     position: relative;
+    overflow: hidden;
   }
 
   .card::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: -1px;
     border-radius: inherit;
-    border: 1px solid rgba(255, 46, 46, 0.7);
-    box-shadow:
-      0 0 18px rgba(255, 46, 46, 0.7),
-      0 0 30px rgba(255, 0, 0, 0.6);
+    border: 1px solid rgba(255, 46, 46, 0.8);
+    box-shadow: 0 0 25px rgba(255, 46, 46, 0.9);
     opacity: 0;
+    transition: opacity 0.25s ease;
     pointer-events: none;
-    transition: opacity 0.3s ease;
   }
 
   .card:hover::before {
-    opacity: 0.8;
+    opacity: 0.7;
   }
 
   .badge {
@@ -147,29 +150,13 @@
     font-size: 11px;
     padding: 4px 10px;
     border-radius: 999px;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     border: 1px solid rgba(255, 46, 46, 0.6);
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     position: relative;
     overflow: hidden;
-  }
-
-  .badge::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.28), transparent);
-    transform: translateX(-120%);
-    opacity: 0.7;
-    animation: badgeShine 5s linear infinite;
-  }
-
-  @keyframes badgeShine {
-    0%   { transform: translateX(-130%); }
-    50%  { transform: translateX(130%); }
-    100% { transform: translateX(130%); }
   }
 
   .badge-dot {
@@ -179,8 +166,7 @@
     background: var(--accent);
     box-shadow:
       0 0 8px rgba(255, 46, 46, 0.9),
-      0 0 14px rgba(255, 46, 46, 0.7);
-    position: relative;
+      0 0 16px rgba(255, 46, 46, 0.7);
     animation: ping 1.8s infinite;
   }
 
@@ -190,54 +176,48 @@
     100% { transform: scale(1.8); opacity: 0; }
   }
 
-  h1 { 
-    font-size: 23px; 
-    margin-top: 14px; 
-    margin-bottom: 6px; 
+  h1 {
+    font-size: 23px;
+    margin-top: 14px;
+    margin-bottom: 6px;
     background: linear-gradient(90deg, #ff6b6b, #ffffff, #ff2e2e);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 12px rgba(255,46,46,0.5);
+    text-shadow: 0 0 14px rgba(255, 46, 46, 0.6);
   }
 
   .subtitle {
     font-size: 13px;
     color: var(--text-muted);
     line-height: 1.6;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
   }
 
-  .chips { 
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 6px; 
-    margin-bottom: 18px; 
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
   }
 
   .chip {
     font-size: 11px;
-    padding: 5px 10px;
+    padding: 4px 10px;
     border-radius: 999px;
-    background: rgba(0, 0, 0, 0.85);
-    border: 1px solid rgba(255, 46, 46, 0.45);
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 46, 46, 0.5);
     color: var(--text-muted);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    position: relative;
-    overflow: hidden;
-    transition: border 0.15s ease, background 0.15s ease, color 0.15s ease;
   }
 
   .chip-dot {
-    width: 6px; height: 6px; border-radius: 999px; background: var(--accent);
-    box-shadow: 0 0 8px rgba(255,46,46,0.8);
-  }
-
-  .chip:hover {
-    border-color: rgba(255, 255, 255, 0.65);
-    background: rgba(40, 0, 0, 0.95);
-    color: var(--text-main);
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(255, 46, 46, 0.7);
   }
 
   label {
@@ -247,28 +227,33 @@
     color: var(--text-muted);
   }
 
-  .input-wrapper { position: relative; margin-bottom: 14px; }
+  .input-wrapper {
+    position: relative;
+    margin-bottom: 10px;
+  }
 
   input[type="url"] {
     width: 100%;
-    padding: 12px 90px 12px 12px;
+    padding: 11px 96px 11px 12px;
     border-radius: 14px;
     border: 1px solid rgba(255, 46, 46, 0.7);
-    background: radial-gradient(circle at top left, rgba(20,0,0,0.85), rgba(0,0,0,0.98));
+    background: radial-gradient(circle at top left, rgba(20, 0, 0, 0.9), rgba(0, 0, 0, 0.98));
     color: var(--text-main);
     font-size: 14px;
     outline: none;
-    transition: border 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, transform 0.12s ease;
+    transition: border 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
   }
 
-  input[type="url"]::placeholder { color: #8b6b6b; font-size: 13px; }
+  input[type="url"]::placeholder {
+    color: #8b6b6b;
+    font-size: 13px;
+  }
 
   input[type="url"]:focus {
     border-color: var(--accent);
     box-shadow:
-      0 0 0 2px rgba(255, 46, 46, 0.5),
+      0 0 0 1px rgba(255, 46, 46, 0.5),
       0 0 20px rgba(255, 46, 46, 0.7);
-    background: radial-gradient(circle at top left, rgba(35,0,0,0.95), rgba(0,0,0,1));
     transform: translateY(-1px);
   }
 
@@ -280,39 +265,32 @@
     font-size: 10px;
     padding: 4px 8px;
     border-radius: 999px;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     color: var(--accent);
+    border: 1px solid rgba(255, 46, 46, 0.8);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    border: 1px solid rgba(255, 46, 46, 0.7);
-    box-shadow: 0 0 18px rgba(255, 46, 46, 0.6);
-    animation: pillPulse 2.5s ease-in-out infinite;
   }
 
-  @keyframes pillPulse {
-    0%, 100% { transform: translateY(-50%) scale(1); opacity: 0.9; }
-    50% { transform: translateY(-50%) scale(1.06); opacity: 1; }
-  }
-
-  select {
+  select#quality {
     width: 100%;
     margin-top: 8px;
     padding: 9px 10px;
     border-radius: 12px;
     border: 1px solid rgba(255, 46, 46, 0.7);
-    background: rgba(0, 0, 0, 0.92);
+    background: rgba(0, 0, 0, 0.95);
     color: var(--text-main);
     font-size: 13px;
     display: none;
     outline: none;
   }
 
-  select:focus {
+  select#quality:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(255, 46, 46, 0.5);
   }
 
-  button {
+  button.main-btn {
     width: 100%;
     border: none;
     border-radius: 14px;
@@ -329,58 +307,24 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
+    min-height: 44px;
     box-shadow:
       0 0 18px rgba(255, 46, 46, 0.8),
       0 16px 45px rgba(0, 0, 0, 0.95);
     transition: transform 0.09s ease, box-shadow 0.09s ease, filter 0.09s ease;
-    position: relative;
-    overflow: hidden;
-    min-height: 44px;
-    animation: btnBreath 4s ease-in-out infinite;
   }
 
-  @keyframes btnBreath {
-    0%, 100% { box-shadow:
-                0 0 14px rgba(255,46,46,0.6),
-                0 14px 40px rgba(0,0,0,0.9); }
-    50% { box-shadow:
-                0 0 22px rgba(255,46,46,0.95),
-                0 18px 50px rgba(0,0,0,1); }
-  }
-
-  button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -120%;
-    width: 60%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
-    transform: skewX(-18deg);
-  }
-
-  button:hover::before {
-    animation: btnShine 0.65s forwards;
-  }
-
-  @keyframes btnShine {
-    0% { left: -120%; }
-    100% { left: 160%; }
-  }
-
-  button:hover {
+  button.main-btn:hover {
     transform: translateY(-2px);
     filter: brightness(1.08);
   }
 
-  button:active {
+  button.main-btn:active {
     transform: translateY(0);
     box-shadow:
       0 10px 30px rgba(0, 0, 0, 1),
       0 0 18px rgba(255, 46, 46, 0.8);
   }
-
-  .btn-icon { font-size: 15px; }
 
   .status {
     font-size: 12px;
@@ -389,13 +333,15 @@
     color: var(--text-muted);
   }
 
-  .status.error { color: var(--danger); }
+  .status.error {
+    color: var(--danger);
+  }
 
   .result {
-    margin-top: 12px;
-    padding: 10px 12px;
+    margin-top: 10px;
+    padding: 9px 11px;
     border-radius: 12px;
-    background: rgba(0, 0, 0, 0.92);
+    background: rgba(0, 0, 0, 0.96);
     border: 1px dashed rgba(255, 46, 46, 0.7);
     font-size: 13px;
     display: none;
@@ -406,9 +352,9 @@
     font-weight: 500;
     text-decoration: none;
   }
-  .result a:hover { 
+
+  .result a:hover {
     text-decoration: underline;
-    color: #ff8c8c;
   }
 
   .disclaimer {
@@ -422,11 +368,11 @@
     margin-top: 16px;
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
-    color: var(--text-muted);
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--text-muted);
   }
 
   .footer a {
@@ -435,55 +381,262 @@
     font-weight: 500;
   }
 
-  .footer a:hover { 
+  .footer a:hover {
     text-decoration: underline;
-    color: #ff8c8c;
   }
-  
-  /* PWA Install Button */
-  #installButton {
+
+  /* VIEWS */
+  .view-section {
+    display: none;
+    animation: fadeIn 0.25s;
+  }
+  .view-section.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* TASKS */
+  .tasks-list {
+    margin-top: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .task-item {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 46, 46, 0.3);
+    font-size: 12px;
+  }
+
+  .task-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .task-title {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .task-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .progress-outer {
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255, 46, 46, 0.18);
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .progress-inner {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ff6b6b, #ff2e2e);
+  }
+
+  .task-status {
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .empty {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 20px 4px;
+  }
+
+  /* FILES */
+  .files-filters {
+    display: flex;
+    gap: 6px;
+    margin: 4px 0 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    border-radius: 999px;
+    border: 1px solid rgba(255, 46, 46, 0.5);
+    background: rgba(0, 0, 0, 0.9);
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
+
+  .filter-chip.active {
+    background: rgba(255, 46, 46, 0.16);
+    color: var(--text-main);
+  }
+
+  .files-list {
+    margin-top: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 46, 46, 0.3);
+    font-size: 12px;
+  }
+
+  .file-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .file-title {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .file-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ghost-btn {
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 46, 46, 0.5);
+    background: transparent;
+    color: var(--text-main);
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .ghost-btn:hover {
+    background: rgba(255, 46, 46, 0.18);
+  }
+
+  /* BOTTOM NAV */
+  .nav-bar {
     position: fixed;
     bottom: 20px;
-    right: 20px;
-    padding: 10px 20px;
-    background: linear-gradient(90deg, #8b0000, #ff2e2e);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-size: 14px;
-    font-weight: 500;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    height: 60px;
+    background: rgba(15, 0, 0, 0.97);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 46, 46, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    backdrop-filter: blur(20px);
+    z-index: 30;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #885555;
+    font-size: 10px;
+    padding: 10px;
     cursor: pointer;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(255, 46, 46, 0.5);
+    transition: 0.18s;
+  }
+
+  .nav-item span.nav-icon {
+    font-size: 18px;
+  }
+
+  .nav-item.active {
+    color: var(--accent);
+    transform: scale(1.08);
+  }
+
+  /* OVERLAYS */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.94);
     display: none;
-    animation: pulse 2s infinite;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 40;
+    padding: 16px;
   }
-  
-  @keyframes pulse {
-    0% { box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3); }
-    50% { box-shadow: 0 4px 20px rgba(255, 46, 46, 0.8); }
-    100% { box-shadow: 0 4px 12px rgba(255, 46, 46, 0.3); }
+
+  .overlay.show {
+    display: flex;
   }
-  
-  body.standalone-mode {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+
+  .overlay video,
+  .overlay audio {
+    max-width: 100%;
+    width: 100%;
   }
-  
+
+  .overlay-title {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .overlay-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    border: none;
+    background: #bf0000;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
   @media (max-width: 520px) {
-    .card { padding: 22px 18px 16px; }
-    h1 { font-size: 21px; }
-    #installButton {
-      bottom: 10px;
-      right: 10px;
-      padding: 8px 16px;
-      font-size: 13px;
+    .card {
+      padding: 20px 16px 16px;
+    }
+    h1 {
+      font-size: 20px;
     }
   }
 </style>
 
 <body>
-  <!-- subtle neon environment -->
   <div class="scanline"></div>
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
@@ -492,193 +645,659 @@
     <div class="card">
       <div class="badge">
         <span class="badge-dot"></span>
-       <strong>ThuYaAungZaw</strong>
+        <span><strong>ThuYaAungZaw</strong></span>
       </div>
 
-      <h1>Video Downloader</h1>
-      <p class="subtitle">
-        Paste any <strong>TikTok</strong>, <strong>Facebook</strong> or <strong>YouTube</strong> video link,
-        choose a quality and get a direct download link.
-      </p>
+      <!-- HOME -->
+      <div id="view-home" class="view-section active">
+        <h1>Video & MP3 Downloader</h1>
+        <p class="subtitle">
+          Paste any <strong>TikTok</strong>, <strong>Facebook</strong> or <strong>YouTube</strong> link.
+          Choose <strong>Video</strong> or <strong>MP3</strong> and download directly.
+        </p>
 
-      <div class="chips">
-        <span class="chip"><span class="chip-dot"></span>TikTok / Facebook / YouTube</span>
-        <span class="chip"><span class="chip-dot"></span>Quality selection</span>
-        <span class="chip"><span class="chip-dot"></span>Not allowed photo+music</span>
+        <div class="chips">
+          <span class="chip"><span class="chip-dot"></span>TikTok / Facebook / YouTube</span>
+          <span class="chip"><span class="chip-dot"></span>MP4 + MP3 (audio only)</span>
+          <span class="chip"><span class="chip-dot"></span>Offline library in Files tab</span>
+          <span class="chip"><span class="chip-dot"></span>Not allow photo+music</span>
+        </div>
+
+        <label for="url">Video URL</label>
+        <div class="input-wrapper">
+          <input id="url" type="url" placeholder="Paste a TikTok, Facebook or YouTube link..." autocomplete="off" />
+          <span id="service-pill" class="service-pill">Auto detect</span>
+        </div>
+
+        <select id="quality"></select>
+
+        <button id="download-btn" type="button" class="main-btn">
+          <span>💟 Download / Convert 💟</span>
+        </button>
+
+        <div id="status" class="status">
+          Step 1 – Paste Link · Step 2 – Choose quality/MP3 · Step 3 – Download ⬇
+        </div>
+        <div id="result" class="result"></div>
+
+        <p class="disclaimer">
+          Only download videos or music that you have permission to save.
+          Respect each platform's copyright rules.
+        </p>
+
+        <div class="footer">
+          <span>Developer by <strong>ThuYaAungZaw</strong></span>
+          <a href="https://www.facebook.com/thura.aungzaw.69" target="_blank" rel="noopener">Facebook</a>
+        </div>
       </div>
 
-      <label for="url">Video URL</label>
-      <div class="input-wrapper">
-        <input
-          id="url"
-          type="url"
-          placeholder="Paste a TikTok, Facebook or YouTube link..."
-          autocomplete="off"
-        />
-        <span id="service-pill" class="service-pill">Auto detect</span>
+      <!-- TASKS -->
+      <div id="view-tasks" class="view-section">
+        <h1>Tasks</h1>
+        <p class="subtitle">
+          Active downloads and recent history. You can see progress and status here.
+        </p>
+        <div id="tasks-list" class="tasks-list"></div>
       </div>
 
-      <select id="quality"></select>
+      <!-- FILES -->
+      <div id="view-files" class="view-section">
+        <h1>Files (Offline)</h1>
+        <p class="subtitle">
+          Finished downloads are saved here.<strong>offline</strong>, as long as the app can open.
+        </p>
 
-      <button id="download-btn" type="button">
-        <span class="btn-icon">💟</span>
-        <span>Generate Download Link</span>
-         <span class="btn-icon">💟</span>
-      </button>
+        <div class="files-filters">
+          <button class="filter-chip active" data-filter="all">All</button>
+          <button class="filter-chip" data-filter="video">Videos</button>
+          <button class="filter-chip" data-filter="audio">Music (MP3)</button>
+        </div>
 
-      <div id="status" class="status">
-        Step 1 – Paste Link, Step 2 – Choose quality, Step 3 – Download ⬇
-      </div>
-      <div id="result" class="result"></div>
-
-      <p class="disclaimer">
-        Please only download videos that you have permission to save.
-        Respect the copyright and terms of service of each platform.
-      </p>
-
-      <div class="footer">
-        <span>Developer by <strong>ThuYaAungZaw</strong></span>
-        <a href="https://www.facebook.com/thura.aungzaw.69" target="_blank" rel="noopener">
-         Facebook
-        </a>
+        <div id="files-list" class="files-list"></div>
       </div>
     </div>
   </div>
 
-  <!-- PWA Install Button -->
-  <button id="installButton" style="display: none;">📱 Install App</button>
+  <!-- BOTTOM NAV -->
+  <div class="nav-bar">
+    <div class="nav-item active" data-tab="home">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" data-tab="tasks">
+      <span class="nav-icon">📥</span>
+      <span>Tasks</span>
+    </div>
+    <div class="nav-item" data-tab="files">
+      <span class="nav-icon">📂</span>
+      <span>Files</span>
+    </div>
+  </div>
+
+  <!-- VIDEO OVERLAY -->
+  <div id="video-overlay" class="overlay">
+    <button class="overlay-close" type="button" onclick="closeVideoOverlay()">✕</button>
+    <div class="overlay-title" id="video-overlay-title"></div>
+    <video id="offline-video" controls playsinline webkit-playsinline></video>
+  </div>
+
+  <!-- AUDIO OVERLAY -->
+  <div id="audio-overlay" class="overlay">
+    <button class="overlay-close" type="button" onclick="closeAudioOverlay()">✕</button>
+    <div class="overlay-title" id="audio-overlay-title"></div>
+    <audio id="offline-audio" controls></audio>
+  </div>
 
   <script>
-const API_BASE = "https://videodownloader-production-0c88.up.railway.app";
+    const API_BASE = "https://videodownloader-production-0c88.up.railway.app";
 
-const urlInput = document.getElementById("url");
-const servicePill = document.getElementById("service-pill");
-const statusEl = document.getElementById("status");
-const resultEl = document.getElementById("result");
-const downloadBtn = document.getElementById("download-btn");
-const qualitySelect = document.getElementById("quality");
+    const urlInput = document.getElementById("url");
+    const servicePill = document.getElementById("service-pill");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+    const downloadBtn = document.getElementById("download-btn");
+    const qualitySelect = document.getElementById("quality");
 
-let lastFormats = [];
-let lastUrl = "";
+    const tasksListEl = document.getElementById("tasks-list");
+    const filesListEl = document.getElementById("files-list");
 
-// --- Detect service ---
-function detectService(url) {
-  if (!url) return "Auto detect";
-  const u = url.toLowerCase();
-  if (u.includes("tiktok")) return "TikTok";
-  if (u.includes("facebook") || u.includes("fb.watch")) return "Facebook";
-  if (u.includes("youtube") || u.includes("youtu.be")) return "YouTube";
-  return "Unknown Error";
-}
+    const navItems = document.querySelectorAll(".nav-item");
+    const views = {
+      home: document.getElementById("view-home"),
+      tasks: document.getElementById("view-tasks"),
+      files: document.getElementById("view-files")
+    };
 
-urlInput.addEventListener("input", () => {
-  const service = detectService(urlInput.value.trim());
-  servicePill.textContent = service;
+    const fileFilterChips = document.querySelectorAll(".filter-chip");
 
-  qualitySelect.style.display = "none";
-  qualitySelect.innerHTML = "";
-  lastFormats = [];
-  lastUrl = "";
-  resultEl.style.display = "none";
-  statusEl.classList.remove("error");
-  statusEl.textContent = "Detecting Link…";
-});
+    const audioOverlay = document.getElementById("audio-overlay");
+    const audioOverlayTitle = document.getElementById("audio-overlay-title");
+    const offlineAudio = document.getElementById("offline-audio");
 
-// --- Fetch formats ---
-async function fetchFormats(url) {
-  const reqUrl = `${API_BASE}/formats?url=${encodeURIComponent(url)}`;
-  const res = await fetch(reqUrl);
-  if (!res.ok) throw new Error("Failed to load formats");
-  return (await res.json()).formats || [];
-}
+    const videoOverlay = document.getElementById("video-overlay");
+    const videoOverlayTitle = document.getElementById("video-overlay-title");
+    const offlineVideo = document.getElementById("offline-video");
 
-function populateQualitySelect(formats) {
-  qualitySelect.innerHTML = "";
-  formats.forEach(f => {
-    const opt = document.createElement("option");
-    opt.value = f.format_id;
-    opt.textContent = f.label;
-    qualitySelect.appendChild(opt);
-  });
-  qualitySelect.style.display = formats.length ? "block" : "none";
-}
+    const SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio";
 
-// ---------- AUTO DOWNLOAD FUNCTION ----------
-async function startDownload(href, filename) {
-  try {
-    const res = await fetch(href);
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
+    let lastFormats = [];
+    let lastUrl = "";
+    let tasks = [];
+    let filesFilter = "all";
+    let db = null;
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename || "video.mp4";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    window.URL.revokeObjectURL(url);
-  } catch (e) {
-    console.error(e);
-    statusEl.textContent = "Auto-download failed. Tap the link manually.";
-    statusEl.classList.add("error");
-  }
-}
-
-// ---------- Main button click ----------
-async function handleClick() {
-  const url = urlInput.value.trim();
-  if (!url) {
-    statusEl.textContent = "Paste a link first.";
-    statusEl.classList.add("error");
-    return;
-  }
-
-  try {
-    // First click: load formats
-    if (lastFormats.length === 0 || lastUrl !== url) {
-      statusEl.textContent = "Checking qualities…";
-      lastFormats = await fetchFormats(url);
-      lastUrl = url;
-      populateQualitySelect(lastFormats);
-      statusEl.textContent = "Choose quality, then tap again to download.";
-      return;
+    // --- Helpers ---
+    function setStatus(msg, isError) {
+      statusEl.textContent = msg;
+      statusEl.classList.toggle("error", !!isError);
     }
 
-    // Second click: generate download
-    const formatId = qualitySelect.value;
-    statusEl.textContent = "Auto Downloading…";
+    function detectService(url) {
+      if (!url) return "Auto detect";
+      const u = url.toLowerCase();
+      if (u.includes("tiktok")) return "TikTok";
+      if (u.includes("facebook") || u.includes("fb.watch")) return "Facebook";
+      if (u.includes("youtube") || u.includes("youtu.be")) return "YouTube";
+      return "Unknown";
+    }
 
-    const reqUrl = `${API_BASE}/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(formatId)}`;
-    const res = await fetch(reqUrl);
-    const data = await res.json();
+    function escapeHTML(str) {
+      return (str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
-    const href = data.download_url.startsWith("http")
-      ? data.download_url
-      : API_BASE + data.download_url;
+    // --- IndexedDB (offline library) ---
+    function openDatabase() {
+      if (db) return Promise.resolve(db);
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("kaneki_downloader", 1);
+        request.onupgradeneeded = (event) => {
+          const database = event.target.result;
+          if (!database.objectStoreNames.contains("files")) {
+            const store = database.createObjectStore("files", { keyPath: "id", autoIncrement: true });
+            store.createIndex("by_category", "category", { unique: false });
+            store.createIndex("by_createdAt", "createdAt", { unique: false });
+          }
+        };
+        request.onsuccess = (event) => {
+          db = event.target.result;
+          resolve(db);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    }
 
-    // AUTO DOWNLOAD
-    await startDownload(href, data.filename);
+    async function saveFileRecord(record) {
+      const database = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction("files", "readwrite");
+        const store = tx.objectStore("files");
+        const req = store.add(record);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
 
-    // Fallback manual link
-    resultEl.style.display = "block";
-    resultEl.innerHTML = `
-      ✅ Download started.<br>
-      If not started, <a href="${href}" download>tap here to download manually</a>.
-    `;
-    statusEl.textContent = "Downloading…";
+    async function getAllFiles() {
+      const database = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction("files", "readonly");
+        const store = tx.objectStore("files");
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
 
-  } catch (e) {
-    statusEl.textContent = "You can't download the video that has a photo and music.";
-    statusEl.classList.add("error");
-  }
-}
+    async function getFileById(id) {
+      const database = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction("files", "readonly");
+        const store = tx.objectStore("files");
+        const req = store.get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    }
 
-downloadBtn.addEventListener("click", handleClick);
-urlInput.addEventListener("keypress", e => { if (e.key === "Enter") handleClick(); });
+    async function deleteFileById(id) {
+      const database = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction("files", "readwrite");
+        const store = tx.objectStore("files");
+        const req = store.delete(id);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
 
-// (PWA install script left unchanged)
+    // --- Nav / Views ---
+    function switchTab(tab) {
+      Object.keys(views).forEach((key) => {
+        views[key].classList.toggle("active", key === tab);
+      });
+      navItems.forEach((item) => {
+        item.classList.toggle("active", item.dataset.tab === tab);
+      });
+
+      if (tab === "files") {
+        loadFilesToUI();
+      }
+    }
+
+    navItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        const tab = item.dataset.tab;
+        switchTab(tab);
+      });
+    });
+
+    // --- Filters (Files) ---
+    fileFilterChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        fileFilterChips.forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        filesFilter = chip.dataset.filter || "all";
+        loadFilesToUI();
+      });
+    });
+
+    // --- URL input ---
+    urlInput.addEventListener("input", () => {
+      const service = detectService(urlInput.value.trim());
+      servicePill.textContent = service;
+
+      qualitySelect.style.display = "none";
+      qualitySelect.innerHTML = "";
+      lastFormats = [];
+      lastUrl = "";
+      resultEl.style.display = "none";
+      setStatus("Detecting link…", false);
+    });
+
+    // --- Fetch formats ---
+    async function fetchFormats(url) {
+      const reqUrl = API_BASE + "/formats?url=" + encodeURIComponent(url);
+      const res = await fetch(reqUrl);
+      if (!res.ok) throw new Error("Failed to load formats");
+      const data = await res.json();
+      return data.formats || [];
+    }
+
+    function populateQualitySelect(formats) {
+      lastFormats = [];
+
+      // Custom MP3 (audio only) format
+      lastFormats.push({
+        id: SPECIAL_AUDIO_FORMAT,
+        label: "🎵 MP3 / Audio only",
+        category: "audio"
+      });
+
+      formats.forEach((f) => {
+        const label = f.label || (f.ext || "mp4") + (f.resolution ? " · " + f.resolution : "");
+        lastFormats.push({
+          id: f.format_id,
+          label: label,
+          category: "video"
+        });
+      });
+
+      qualitySelect.innerHTML = "";
+      lastFormats.forEach((fmt) => {
+        const opt = document.createElement("option");
+        opt.value = fmt.id;
+        opt.textContent = fmt.label;
+        opt.dataset.category = fmt.category;
+        qualitySelect.appendChild(opt);
+      });
+      qualitySelect.style.display = "block";
+    }
+
+    // --- Tasks UI ---
+    function renderTasks() {
+      if (!tasksListEl) return;
+      if (!tasks.length) {
+        tasksListEl.innerHTML = '<div class="empty">No downloads yet.</div>';
+        return;
+      }
+
+      const html = tasks
+        .slice()
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .map((t) => {
+          const pct = typeof t.progress === "number" ? Math.max(0, Math.min(100, t.progress)) : 0;
+          return `
+            <div class="task-item">
+              <div class="task-top">
+                <div class="task-title">${escapeHTML(t.title || t.filename || "Download")}</div>
+                <div class="task-meta">${t.category === "audio" ? "MP3" : "Video"}</div>
+              </div>
+              <div class="task-meta">
+                ${t.status || "Queued"}${pct ? " · " + pct + "%" : ""}
+              </div>
+              <div class="progress-outer">
+                <div class="progress-inner" style="width:${pct}%;"></div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+      tasksListEl.innerHTML = html;
+    }
+
+    function addTask(task) {
+      tasks.push(task);
+      renderTasks();
+    }
+
+    function updateTask(id, patch) {
+      const t = tasks.find((x) => x.id === id);
+      if (!t) return;
+      Object.assign(t, patch);
+      renderTasks();
+    }
+
+    // --- Files UI ---
+    async function loadFilesToUI() {
+      if (!filesListEl) return;
+      try {
+        const allFiles = await getAllFiles();
+        if (!allFiles.length) {
+          filesListEl.innerHTML = '<div class="empty">No saved files yet.</div>';
+          return;
+        }
+        const sorted = allFiles.sort((a, b) => b.createdAt - a.createdAt);
+        const filtered =
+          filesFilter === "all" ? sorted : sorted.filter((f) => f.category === filesFilter);
+
+        if (!filtered.length) {
+          filesListEl.innerHTML = '<div class="empty">No files in this category.</div>';
+          return;
+        }
+
+        const html = filtered
+          .map((f) => {
+            const sizeMB = f.size ? (f.size / (1024 * 1024)).toFixed(1) : "?";
+            const label = f.category === "audio" ? "Music" : "Video";
+            return `
+              <div class="file-item">
+                <div class="file-main">
+                  <div class="file-title">${escapeHTML(f.title || f.filename || "Untitled")}</div>
+                  <div class="file-meta">${label} · ${sizeMB} MB</div>
+                </div>
+                <div class="file-actions">
+                  <button class="ghost-btn" data-action="play" data-id="${f.id}">Play</button>
+                  <button class="ghost-btn" data-action="download" data-id="${f.id}">Save</button>
+                  <button class="ghost-btn" data-action="delete" data-id="${f.id}">✕</button>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+
+        filesListEl.innerHTML = html;
+      } catch (e) {
+        console.error(e);
+        filesListEl.innerHTML =
+          '<div class="empty">Storage not available in this browser.</div>';
+      }
+    }
+
+    // Event delegation for files list
+    if (filesListEl) {
+      filesListEl.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button[data-action]");
+        if (!btn) return;
+        const id = Number(btn.dataset.id);
+        const action = btn.dataset.action;
+        if (!id) return;
+
+        try {
+          const file = await getFileById(id);
+          if (!file) return;
+
+          if (action === "play") {
+            playStoredFile(file);
+          } else if (action === "download") {
+            downloadStoredFile(file);
+          } else if (action === "delete") {
+            await deleteFileById(id);
+            loadFilesToUI();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    }
+
+    function playStoredFile(file) {
+      const blob = file.data;
+      const url = URL.createObjectURL(blob);
+      if (file.category === "audio") {
+        audioOverlayTitle.textContent = file.title || "Music";
+        offlineAudio.src = url;
+        audioOverlay.classList.add("show");
+        offlineAudio.play().catch(() => {});
+        offlineAudio.onended = () => {
+          URL.revokeObjectURL(url);
+        };
+      } else {
+        videoOverlayTitle.textContent = file.title || "Video";
+        offlineVideo.src = url;
+        videoOverlay.classList.add("show");
+        offlineVideo.play().catch(() => {});
+        offlineVideo.onended = () => {
+          URL.revokeObjectURL(url);
+        };
+      }
+    }
+
+    function downloadStoredFile(file) {
+      const blob = file.data;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download =
+        file.filename || (file.category === "audio" ? "audio.mp3" : "video.mp4");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function closeVideoOverlay() {
+      videoOverlay.classList.remove("show");
+      offlineVideo.pause();
+      offlineVideo.removeAttribute("src");
+      offlineVideo.load();
+    }
+
+    function closeAudioOverlay() {
+      audioOverlay.classList.remove("show");
+      offlineAudio.pause();
+      offlineAudio.removeAttribute("src");
+      offlineAudio.load();
+    }
+
+    // --- Main Download Logic ---
+    async function handleClick() {
+      const url = urlInput.value.trim();
+      if (!url) {
+        setStatus("Paste a link first.", true);
+        return;
+      }
+
+      // Stage 1: fetch formats
+      if (!lastFormats.length || lastUrl !== url) {
+        try {
+          setStatus("Checking qualities…", false);
+          const formats = await fetchFormats(url);
+          lastUrl = url;
+          populateQualitySelect(formats);
+          setStatus("Choose Video / MP3 then tap Download again.", false);
+        } catch (e) {
+          console.error(e);
+          setStatus("Failed to analyze link. Check connection.", true);
+        }
+        return;
+      }
+
+      // Stage 2: download
+      const formatId = qualitySelect.value;
+      const fmt = lastFormats.find((f) => f.id === formatId) || {
+        category: "video",
+        label: "Video"
+      };
+      const category = fmt.category || "video";
+
+      try {
+        setStatus("Preparing download…", false);
+        resultEl.style.display = "none";
+
+        const reqUrl =
+          API_BASE +
+          "/download?url=" +
+          encodeURIComponent(url) +
+          "&format_id=" +
+          encodeURIComponent(formatId);
+        const res = await fetch(reqUrl);
+        if (!res.ok) throw new Error("Server error");
+        const data = await res.json();
+        const href = data.download_url.startsWith("http")
+          ? data.download_url
+          : API_BASE + data.download_url;
+        const filename =
+          data.filename ||
+          (category === "audio" ? "audio.mp3" : "video.mp4");
+        const title = data.title || fmt.label || filename;
+
+        await startDownloadWithTask(href, filename, category, title);
+
+        resultEl.style.display = "block";
+        resultEl.innerHTML =
+          '✅ Download completed. If it did not start, <a href="' +
+          href +
+          '" target="_blank" rel="noopener">tap here to download manually</a>.';
+      } catch (e) {
+        console.error(e);
+        setStatus(
+          "You can't download some special videos (photo + music) or network error.",
+          true
+        );
+      }
+    }
+
+    async function startDownloadWithTask(href, filename, category, title) {
+      const taskId = Date.now() + Math.random();
+      const task = {
+        id: taskId,
+        title: title,
+        filename: filename,
+        category: category,
+        progress: 0,
+        status: "Starting",
+        createdAt: Date.now()
+      };
+      addTask(task);
+
+      try {
+        const res = await fetch(href);
+        if (!res.ok) throw new Error("Network error");
+
+        const total = Number(res.headers.get("Content-Length") || "0");
+        const contentType =
+          res.headers.get("Content-Type") ||
+          (category === "audio" ? "audio/mpeg" : "video/mp4");
+
+        const reader = res.body && res.body.getReader ? res.body.getReader() : null;
+
+        if (!reader) {
+          // Fallback: let the browser download without offline save
+          const a = document.createElement("a");
+          a.href = href;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          updateTask(taskId, { progress: 100, status: "Completed (external)" });
+          setStatus("Download started in browser.", false);
+          return;
+        }
+
+        const chunks = [];
+        let loaded = 0;
+        updateTask(taskId, { status: "Downloading" });
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value) {
+            chunks.push(value);
+            loaded += value.length;
+            if (total) {
+              const pct = Math.round((loaded / total) * 100);
+              updateTask(taskId, { progress: pct });
+            }
+          }
+        }
+
+        const blob = new Blob(chunks, { type: contentType });
+        updateTask(taskId, { status: "Saving", progress: 100 });
+
+        // Save into IndexedDB for offline Files tab
+        try {
+          const record = {
+            createdAt: Date.now(),
+            title: title,
+            filename: filename,
+            size: blob.size,
+            category: category,
+            mime: contentType,
+            data: blob
+          };
+          await saveFileRecord(record);
+        } catch (e) {
+          console.warn("Failed to save to library", e);
+        }
+
+        // Trigger browser download
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(objectUrl);
+
+        updateTask(taskId, { status: "Completed" });
+        setStatus("Download completed.", false);
+        loadFilesToUI();
+      } catch (err) {
+        console.error(err);
+        updateTask(taskId, { status: "Error", progress: 0 });
+        setStatus("Download failed. Check internet connection.", true);
+      }
+    }
+
+    downloadBtn.addEventListener("click", handleClick);
+    urlInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") handleClick();
+    });
+
+    // --- Service Worker for offline shell (if you have sw.js) ---
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("./sw.js")
+          .catch((err) => console.warn("SW register failed", err));
+      });
+    }
   </script>
-
 </body>
 </html>
