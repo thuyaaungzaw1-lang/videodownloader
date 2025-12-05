@@ -1,6 +1,5 @@
 import os
 import uuid
-import subprocess
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,20 +21,19 @@ app.add_middleware(
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-# Serve static files
 app.mount("/files", StaticFiles(directory=DOWNLOAD_DIR), name="files")
 
-# frontend-side constant
+# frontend ကြိမ်ကြိမ်သုံးထားတဲ့ audio-only format id
 SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio"
 
 
 @app.get("/")
 def root():
-    return {"status": "ok", "message": "ThuYaAungZaw Video Downloader API (FFmpeg/H264)"}
+    return {"status": "ok", "message": "ThuYaAungZaw Downloader (no-ffmpeg, H264 only)"}
 
 
 # ------------------------------------------------------------
-#  FORMATS
+# FORMATS
 # ------------------------------------------------------------
 @app.get("/formats")
 def get_formats(url: str):
@@ -53,19 +51,25 @@ def get_formats(url: str):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
 
-        extractor = (info.get("extractor") or "").lower()
         fmts = []
 
         for f in info.get("formats", []):
             vcodec = (f.get("vcodec") or "").lower()
+            acodec = (f.get("acodec") or "").lower()
             ext = (f.get("ext") or "").lower()
 
-            # audio-only formats မပါအောင်ရယ်
+            # audio-only / video-only မလိုပါ -> progressive mp4 ပဲ လိုတယ်
             if vcodec == "none":
                 continue
+            if acodec == "none":
+                continue
 
-            # mp4 ကိုပဲ ထားမယ် (YouTube မှာတောင် ffmpeg နဲ့ mp4 ထုတ်မယ်)
+            # mp4 မဟုတ်ရင် မထည့်
             if ext != "mp4":
+                continue
+
+            # H.264 / avc1 ဖြစ်ရမယ် (Safari / iPhone playable)
+            if not (vcodec.startswith("avc1") or "h264" in vcodec):
                 continue
 
             height = f.get("height") or 0
@@ -76,11 +80,9 @@ def get_formats(url: str):
                 label_parts.append(f"{height}p")
             if fps:
                 label_parts.append(f"{fps}fps")
-
-            if label_parts:
-                label = " ".join(label_parts)
-            else:
-                label = f.get("format_note") or f.get("format_id") or "MP4"
+            label = " ".join(label_parts) if label_parts else (
+                f.get("format_note") or f.get("format_id") or "MP4"
+            )
 
             fmts.append(
                 {
@@ -90,7 +92,7 @@ def get_formats(url: str):
                 }
             )
 
-        # အမြင့်ဆုံး resolution ကအပေါ်ဆုံး ဖြစ်အောင်
+        # resolution မြင့်順နဲ့ ပြမယ်
         fmts.sort(key=lambda x: x["height"], reverse=True)
         for f in fmts:
             f.pop("height", None)
@@ -102,18 +104,17 @@ def get_formats(url: str):
 
 
 # ------------------------------------------------------------
-#  INTERNAL DOWNLOAD HELPERS
+# INTERNAL DOWNLOAD HELPERS
 # ------------------------------------------------------------
-
-def download_audio(url: str, format_expr: str) -> str:
+def download_audio_only(url: str) -> str:
     """
-    Audio only (MP3 / M4A) – MP3 already OK so just download bestaudio.
+    Audio only (MP3/M4A). Safari အတွက် m4aပဲ အလိုအလျောက် ရနိုင်အောင် format expr သတ်မှတ်ထားတယ်။
     """
-    out_base = str(uuid.uuid4())
-    out_tmpl = os.path.join(DOWNLOAD_DIR, out_base + ".%(ext)s")
+    uid = str(uuid.uuid4())
+    out_tmpl = os.path.join(DOWNLOAD_DIR, uid + ".%(ext)s")
 
     ydl_opts = {
-        "format": format_expr,              # e.g. bestaudio[ext=m4a]/bestaudio
+        "format": SPECIAL_AUDIO_FORMAT,  # bestaudio[ext=m4a]/bestaudio
         "outtmpl": out_tmpl,
         "quiet": True,
         "noplaylist": True,
@@ -122,66 +123,35 @@ def download_audio(url: str, format_expr: str) -> str:
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        path = ydl.prepare_filename(info)
+        filename = ydl.prepare_filename(info)
 
-    # path = downloads/<uuid>.m4a (or .webm / .opus etc)
-    filename = os.path.basename(path)
-    return filename
+    return os.path.basename(filename)
 
 
-def download_video_h264(url: str, format_id: str) -> str:
+def download_video_progressive(url: str, format_id: str) -> str:
     """
-    Video download + FFmpeg re-encode to H.264 + AAC (iPhone/Safari-safe mp4).
+    Video + audio ပေါင်းပြီးသား progressive mp4 (H.264) ကိုပဲ
+    formats() မှာ filter ထုတ်ထားပြီးသား, ဒီမှာတော့ တန်း download လုပ်ရုံပါ။
     """
-    # temp raw path (youtube vp9/av1 etc)
-    base = str(uuid.uuid4())
-    temp_path = os.path.join(DOWNLOAD_DIR, base + "_raw.%(ext)s")
-    final_path = os.path.join(DOWNLOAD_DIR, base + ".mp4")
+    out_tmpl = os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s")
 
-    # first: download chosen video format + best audio
     ydl_opts = {
-        "format": f"{format_id}+bestaudio/best",
-        "outtmpl": temp_path,
+        "format": format_id,
+        "outtmpl": out_tmpl,
         "quiet": True,
         "noplaylist": True,
         "nocheckcertificate": True,
-        "merge_output_format": "mp4",
     }
 
-    # Download
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        # merged output path (mp4)
-        raw_path = ydl.prepare_filename(info)
+        filename = ydl.prepare_filename(info)
 
-    # now raw_path -> re-encode to H.264 + AAC (always mp4)
-    # iOS / Safari playable settings
-    cmd = [
-        "ffmpeg",
-        "-y",
-        "-i", raw_path,
-        "-c:v", "libx264",
-        "-preset", "veryfast",
-        "-crf", "20",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-movflags", "+faststart",
-        final_path,
-    ]
-
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    # remove raw file
-    try:
-        os.remove(raw_path)
-    except Exception:
-        pass
-
-    return os.path.basename(final_path)
+    return os.path.basename(filename)
 
 
 # ------------------------------------------------------------
-#  DOWNLOAD ENDPOINT
+# DOWNLOAD ENDPOINT
 # ------------------------------------------------------------
 @app.get("/download")
 def download(url: str, format_id: str):
@@ -189,22 +159,23 @@ def download(url: str, format_id: str):
         raise HTTPException(status_code=400, detail="Missing url or format_id")
 
     try:
-        # Audio-only option from frontend
-        if format_id == SPECIAL_AUDIO_FORMAT or format_id.startswith("bestaudio"):
-            filename = download_audio(url, format_id)
+        # frontend က MP3 / Audio only ကို ဒီ format_id နဲ့ပဲ လှမ်းပို့လာမယ်
+        if format_id == SPECIAL_AUDIO_FORMAT:
+            filename = download_audio_only(url)
         else:
-            filename = download_video_h264(url, format_id)
+            filename = download_video_progressive(url, format_id)
 
         return {
             "download_url": f"/file/{filename}",
             "filename": filename,
         }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # ------------------------------------------------------------
-#  SERVE FILE
+# SERVE FILE
 # ------------------------------------------------------------
 @app.get("/file/{filename}")
 def get_file(filename: str):
@@ -213,9 +184,7 @@ def get_file(filename: str):
         raise HTTPException(status_code=404, detail="File not found")
 
     lower = filename.lower()
-    # simple mime detection
-    if lower.endswith(".mp3") or lower.endswith(".m4a") or lower.endswith(".aac") \
-       or lower.endswith(".opus") or lower.endswith(".webm"):
+    if lower.endswith(".mp3") or lower.endswith(".m4a") or lower.endswith(".aac"):
         media_type = "audio/mpeg"
     else:
         media_type = "video/mp4"
