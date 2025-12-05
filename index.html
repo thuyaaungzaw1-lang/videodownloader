@@ -318,7 +318,7 @@
     <video id="offline-video" controls playsinline webkit-playsinline></video>
   </div>
 
-  <script>
+    <script>
     const API_BASE = "https://videodownloader-production-0c88.up.railway.app";
     const SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio";
 
@@ -470,6 +470,23 @@
       setStatus("Detecting link…",false);
     });
 
+    // ---- Helper to beautify resolution label ----
+    function prettifyResolutionLabel(rawLabel) {
+      if (!rawLabel) return "MP4";
+      const lower = rawLabel.toString().toLowerCase().trim();
+
+      // SD / HD → 480p / 720p (estimate)
+      if (lower === "sd") return "SD 480p";
+      if (lower === "hd") return "HD 720p";
+
+      // e.g. "sd default", "sd_src" …
+      if (lower.startsWith("sd")) return "SD 480p";
+      if (lower.startsWith("hd")) return "HD 720p";
+
+      // already 720p / 1080p etc
+      return rawLabel;
+    }
+
     // ---- Formats ----
     async function fetchFormats(u){
       const r = await fetch(`${API_BASE}/formats?url=${encodeURIComponent(u)}`);
@@ -478,12 +495,26 @@
       return d.formats || [];
     }
     function populateFormats(fs){
-      lastFormats = [{id:SPECIAL_AUDIO_FORMAT,label:"🎵 MP3 / Audio only",category:"audio"}];
-      fs.forEach(f=> lastFormats.push({id:f.format_id,label:f.label || (f.ext||"mp4"),category:"video"}));
+      lastFormats = [
+        {id:SPECIAL_AUDIO_FORMAT,label:"🎵 MP3 / Audio only",category:"audio"}
+      ];
+
+      fs.forEach(f=>{
+        const rawLabel = f.label || f.ext || "mp4";
+        const pretty = prettifyResolutionLabel(rawLabel);
+        lastFormats.push({
+          id: f.format_id,
+          label: pretty,
+          category: "video"
+        });
+      });
+
       qualitySelect.innerHTML="";
       lastFormats.forEach(f=>{
         const o=document.createElement("option");
-        o.value=f.id;o.textContent=f.label;o.dataset.category=f.category;
+        o.value=f.id;
+        o.textContent=f.label;
+        o.dataset.category=f.category;
         qualitySelect.appendChild(o);
       });
       qualitySelect.style.display="block";
@@ -609,7 +640,6 @@
 
     // ---- Video overlay ----
     function openVideoFromRecord(file) {
-      // IndexedDB ထဲက data ကို safe Blob အနေဖြင့် ပြန်ပြင်
       let blob;
       if (file.data instanceof Blob) {
         blob = file.data;
@@ -761,5 +791,3 @@
       });
     }
   </script>
-</body>
-</html>
