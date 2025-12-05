@@ -258,18 +258,32 @@ def _choose_best_format(info, quality_tag: str):
 
 def download_video_stable(url: str, quality_tag: str) -> str:
     """
-    URL + quality_tag(q720/q480/q360) ထဲကနေ
-    iPhone/Safari playable ဖြစ်မယ့် progressive mp4 format ကိုရွေးပြီး download လုပ်မယ်။
-    - TikTok URL + q720 ဖြစ်ရင် 1080p ထိရှာပေးမယ် (no-watermark mp4 only)
+    URL + quality_tag(format_id or q720/q480/q360)
     """
-
     base_opts = {
         "quiet": True,
         "noplaylist": True,
         "nocheckcertificate": True,
     }
 
-    # 1) Info only – format table ရယူမယ်
+    # -------------------------------------------------
+    # 0) Direct format_id mode (1080p, 720p, ... from UI)
+    # -------------------------------------------------
+    if quality_tag not in ("q720", "q480", "q360"):
+        out_tmpl = os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s")
+        ydl_opts = {
+            **base_opts,
+            "format": quality_tag,   # <- UI ကပို့တဲ့ real format_id
+            "outtmpl": out_tmpl,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info2 = ydl.extract_info(url, download=True)
+            path = ydl.prepare_filename(info2)
+        return os.path.basename(path)
+
+    # -------------------------------------------------
+    # OLD behavior (q720/q480/q360) – မပျက်အောင်ထား
+    # -------------------------------------------------
     with yt_dlp.YoutubeDL({**base_opts, "skip_download": True}) as ydl:
         info = ydl.extract_info(url, download=False)
 
@@ -280,7 +294,6 @@ def download_video_stable(url: str, quality_tag: str) -> str:
     fmt_id = chosen.get("format_id")
     out_tmpl = os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s")
 
-    # 2) actual download
     ydl_opts = {
         **base_opts,
         "format": fmt_id,
@@ -292,6 +305,7 @@ def download_video_stable(url: str, quality_tag: str) -> str:
         path = ydl.prepare_filename(info2)
 
     return os.path.basename(path)
+
 
 
 # ------------------------------------------------------------
