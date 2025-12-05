@@ -31,12 +31,12 @@ SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio"
 def root():
     return {
         "status": "ok",
-        "message": "ThuYaAungZaw Downloader (YouTube H264 720p/360p + TikTok no-watermark 1080p)",
+        "message": "ThuYaAungZaw Downloader (YouTube H264 1080/720/360 + TikTok selectable)",
     }
 
 
 # ------------------------------------------------------------
-# FORMATS – frontend resolution dropdown ပဲ
+# FORMATS – frontend resolution dropdown ပဲ (UI)
 # ------------------------------------------------------------
 @app.get("/formats")
 def get_formats(url: str):
@@ -83,7 +83,8 @@ def _choose_best_format(info, quality_tag: str):
 
     - TikTok: no-watermark mp4 သာရွေးပြီး,
               q720 အတွက် height <= 1080 ထဲက အမြင့်ဆုံး format ကိုယူမယ်
-    - YouTube: format 22 / 18 ကိုသီးသန့် handle လုပ်မယ်
+              q480/q360 အတွက်တော့ quality နည်းတဲ့ resolution ကိုရှာပေးပို့မယ်
+    - YouTube: format 37 / 22 / 18 ကိုသီးသန့် handle လုပ်မယ်
     - အခြား site တွေ: preferred_max = 720/480/360 နဲ့ generic progressive mp4 ရွေးမယ်
     """
     extractor = (info.get("extractor") or "").lower()
@@ -95,7 +96,8 @@ def _choose_best_format(info, quality_tag: str):
     if "tiktok" in extractor:
         # watermark မပါတဲ့ mp4 formats only
         clean = [
-            f for f in formats
+            f
+            for f in formats
             if (f.get("ext") == "mp4")
             and not ("watermark" in (f.get("format_note") or "").lower())
         ]
@@ -118,23 +120,30 @@ def _choose_best_format(info, quality_tag: str):
             # preferred_max အောက်ကထဲက အမြင့်ဆုံး
             return sorted(ok, key=lambda x: x.get("height") or 0, reverse=True)[0]
 
-        # ≤ preferred_max မရှိရင်တော့ ရနိုင်သမျှထဲက အမြင့်ဆုံး
+        # ≤ preferred_max မရှိရင်တော့
         if clean:
-            return sorted(clean, key=lambda x: x.get("height") or 0, reverse=True)[0]
+            if quality_tag == "q720":
+                # high quality လိုရင် အမြင့်ဆုံးကိုပေးမယ်
+                return sorted(clean, key=lambda x: x.get("height") or 0, reverse=True)[0]
+            else:
+                # low quality (q480/q360) တွေမှာတော့ ရနိုင်သမျှထဲက
+                # အနိမ့်ဆုံး height ကိုရွေးမယ် (file size လျော့အောင်)
+                return sorted(clean, key=lambda x: x.get("height") or 0)[0]
 
         return None
 
     # ---------------------------------------------------------
-    # 2) YOUTUBE – 720/360 H.264 progressive ကိုသီးသန့်ရွေးမယ်
+    # 2) YOUTUBE – 1080/720/360 H.264 progressive ကိုသီးသန့်ရွေးမယ်
     # ---------------------------------------------------------
     def find_by_id(fid):
         return next((f for f in formats if f.get("format_id") == fid), None)
 
     if "youtube" in extractor:
+        # 37 = 1080p H.264 + audio
         # 22 = 720p H.264 + audio
         # 18 = 360p H.264 + audio
         if quality_tag == "q720":
-            for fid in ["22", "18"]:
+            for fid in ["37", "22", "18"]:
                 f = find_by_id(fid)
                 if f:
                     return f
@@ -145,7 +154,7 @@ def _choose_best_format(info, quality_tag: str):
                 if f:
                     return f
         else:  # q360
-            for fid in ["18", "22"]:
+            for fid in ["18", "22", "37"]:
                 f = find_by_id(fid)
                 if f:
                     return f
@@ -162,14 +171,16 @@ def _choose_best_format(info, quality_tag: str):
         preferred_max = 360
 
     prog = [
-        f for f in formats
+        f
+        for f in formats
         if (f.get("vcodec") or "").lower() != "none"
         and (f.get("acodec") or "").lower() != "none"
         and (f.get("ext") or "").lower() == "mp4"
     ]
 
     h264 = [
-        f for f in prog
+        f
+        for f in prog
         if (f.get("vcodec") or "").lower().startswith("avc1")
         or "h264" in (f.get("vcodec") or "").lower()
     ]
