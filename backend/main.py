@@ -43,16 +43,82 @@ def get_formats(url: str):
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
 
-    # UI အတွက် 720p / 480p / 360p ပြမယ်
-    # TikTok မှာတော့ q720 ရွေးရင် backend က 1080p ထိလည်း အမြင့်ဆုံးကိုယူပေးမယ်
-    formats = [
-        {"format_id": "q720", "label": "720p"},
-        {"format_id": "q480", "label": "480p"},
-        {"format_id": "q360", "label": "360p"},
-    ]
-    return {"formats": formats}
+    base_opts = {
+        "quiet": True,
+        "noplaylist": True,
+        "nocheckcertificate": True,
+        "skip_download": True,
+    }
 
+    try:
+        with yt_dlp.YoutubeDL(base_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch formats: {e}")
 
+    extractor = (info.get("extractor") or "").lower()
+    all_formats = info.get("formats", []) or []
+
+    # ---------------------------
+    # 1) TikTok – no watermark
+    # ---------------------------
+    if "tiktok" in extractor:
+        candidates = [
+            f for f in all_formats
+            if (f.get("ext") == "mp4")
+            and not ("watermark" in (f.get("format_note") or "").lower())
+        ]
+        if not candidates:
+            candidates = [f for f in all_formats if f.get("ext") == "mp4"]
+    else:
+        # ---------------------------
+        # 2) Generic (YouTube, FB…)
+        # ---------------------------
+        candidates = [
+            f for f in all_formats
+            if (f.get("vcodec") or "").lower() != "none"
+            and (f.get("acodec") or "").lower() != "none"
+            and (f.get("ext") or "").lower() == "mp4"
+        ]
+
+    # ---------------------------
+    # Max resolution rule
+    #   - Facebook: ≤ 720p
+    #   - Others (YT/TikTok/...): ≤ 1080p
+    # ---------------------------
+    max_height = 1080
+    if "facebook" in extractor:
+        max_height = 720
+
+    by_height = {}
+    for f in candidates:
+        h = f.get("height") or 0
+        if not h or h > max_height:
+            continue
+        prev = by_height.get(h)
+        # same height အတွက် quality မြင့်တာ (tbr) ကိုထားမယ်
+        if (not prev) or ((f.get("tbr") or 0) > (prev.get("tbr") or 0)):
+            by_height[h] = f
+
+    if not by_height:
+        # fallback – လက်ရှိ static option ပြန်သုံး
+        fallback = [
+            {"format_id": "q720", "label": "720p"},
+            {"format_id": "q480", "label": "480p"},
+            {"format_id": "q360", "label": "360p"},
+        ]
+        return {"formats": fallback}
+
+    # height အနည်းဆုံး → အမြင့်ဆုံး sort
+    out = []
+    for h in sorted(by_height.keys()):
+        f = by_height[h]
+        out.append({
+            "format_id": f.get("format_id"),
+            "label": f"{h}p",
+        })
+
+    return {"formats": out}
 # ------------------------------------------------------------
 # INTERNAL HELPERS
 # ------------------------------------------------------------
