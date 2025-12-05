@@ -23,29 +23,31 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 app.mount("/files", StaticFiles(directory=DOWNLOAD_DIR), name="files")
 
-# frontend side audio-only id
+# frontendမှာသုံးထားတဲ့ audio-only format id နဲ့ အတူတူပဲထားရမယ်
 SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio"
 
 
 @app.get("/")
 def root():
-    return {"status": "ok", "message": "ThuYaAungZaw Downloader (stable H264 mp4)"}
+    return {"status": "ok", "message": "ThuYaAungZaw Downloader (stable up to 720p)"}
 
 
 # ------------------------------------------------------------
-# FORMATS  (no heavy yt-dlp inspect – just give generic choices)
+# FORMATS – frontend ကိုပြအတွက်ပဲ
 # ------------------------------------------------------------
 @app.get("/formats")
 def get_formats(url: str):
     """
-    Frontend က ဒါနဲ့သာ Resolution စာလုံး ပြမယ် – actual quality ကိုတော့
-    /download မှာ format expression နဲ့ handle လုပ်မယ်။
+    URL ကို check လိုက်မှပေမယ့်, အခု version မှာ
+    frontend ကို အောက်က generic resolution 3 မျိုးပဲ ပြန်ပေးမယ်:
+    720p, 480p, 360p
+    Real quality ကိုတော့ /download မှာ expression နဲ့ handle လုပ်မယ်။
     """
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
 
-    # Generic options – all sites share this
     formats = [
+        {"format_id": "q720", "label": "720p"},
         {"format_id": "q480", "label": "480p"},
         {"format_id": "q360", "label": "360p"},
     ]
@@ -57,7 +59,8 @@ def get_formats(url: str):
 # ------------------------------------------------------------
 def download_audio_only(url: str) -> str:
     """
-    Audio only – bestaudio (m4a/whatever). Frontend ကတော့ MP3 / Audio only လို့ပဲ ပြမယ်။
+    Audio only – bestaudio (m4a/whatever).
+    Frontend က "MP3 / Audio only" လို့ ပြမယ်။
     """
     uid = str(uuid.uuid4())
     out_tmpl = os.path.join(DOWNLOAD_DIR, uid + ".%(ext)s")
@@ -79,17 +82,20 @@ def download_audio_only(url: str) -> str:
 
 def download_video_stable(url: str, format_id: str) -> str:
     """
-    Stable mp4 video (audio+video together, H.264 progressive where possible).
-    We ignore the exact format id and instead use a safe yt-dlp expression.
+    Stable mp4 video (audio+video together, progressive mp4).
+    q720 / q480 / q360 အလိုက် height limit ချပြီး download မယ်။
     """
 
-    # target height by pseudo id
-    if format_id == "q360":
-        max_h = 360
-    else:
+    # pseudo id အလိုက် target height
+    if format_id == "q720":
+        max_h = 720
+    elif format_id == "q480":
         max_h = 480
+    else:
+        max_h = 360
 
-    # Progressive mp4 only: both audio & video present
+    # Progressive mp4 only: audio + video ပါရမယ်
+    # height<=max_h ကြိုးစားမယ်, မရရင် fallback အနေနဲ့ best progressive mp4
     fmt_expr = (
         f"best[ext=mp4][vcodec!=none][acodec!=none][height<={max_h}]"
         f"/best[ext=mp4][vcodec!=none][acodec!=none]"
@@ -122,9 +128,10 @@ def download(url: str, format_id: str):
 
     try:
         if format_id == SPECIAL_AUDIO_FORMAT:
+            # MP3 / Audio only
             filename = download_audio_only(url)
         else:
-            # q480 / q360 … other strings fall back to 480p
+            # q720 / q480 / q360 → video
             filename = download_video_stable(url, format_id)
 
         return {
@@ -132,7 +139,6 @@ def download(url: str, format_id: str):
             "filename": filename,
         }
     except Exception as e:
-        # debug အတွက် error message ပြန်ပို့ပေးထားမယ်
         raise HTTPException(status_code=500, detail=f"Download error: {e}")
 
 
