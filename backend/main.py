@@ -31,26 +31,128 @@ SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio"
 def root():
     return {
         "status": "ok",
-        "message": "ThuYaAungZaw Downloader (YouTube H264 720p/360p + TikTok no-watermark 1080p)",
+        "message": "ThuYaAungZaw Downloader (Dynamic resolutions: YouTube/TikTok/Facebook)",
     }
 
 
 # ------------------------------------------------------------
-# FORMATS – frontend resolution dropdown ပဲ
+# FORMATS – URL ပေါ်မူတည်ပြီး dynamic resolutions
 # ------------------------------------------------------------
 @app.get("/formats")
 def get_formats(url: str):
+    """
+    URL ကိုစစ်ပြီး
+    - YouTube: Safari-playable H.264 progressive MP4 (<=1080p)
+    - TikTok: no-watermark MP4 (<=1080p)
+    - Facebook: progressive MP4 (<=720p)
+    - Others: progressive MP4 (<=1080p)
+    ဆိုပြီး available resolutions တွေကို low -> high အစီအစဉ်နဲ့ပို့ပေးမယ်
+    (frontend က MP3 option ကိုထပ်ထည့်သုံးလိမ့်မယ်)
+    """
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
 
-    # UI အတွက် 720p / 480p / 360p ပြမယ်
-    # TikTok မှာတော့ q720 ရွေးရင် backend က 1080p ထိလည်း အမြင့်ဆုံးကိုယူပေးမယ်
-    formats = [
-        {"format_id": "q720", "label": "720p"},
-        {"format_id": "q480", "label": "480p"},
-        {"format_id": "q360", "label": "360p"},
-    ]
-    return {"formats": formats}
+    base_opts = {
+        "quiet": True,
+        "noplaylist": True,
+        "nocheckcertificate": True,
+        "skip_download": True,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(base_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch formats: {e}")
+
+    extractor = (info.get("extractor") or "").lower()
+    all_formats = info.get("formats", []) or []
+
+    def is_progressive_mp4(f):
+        v = (f.get("vcodec") or "").lower()
+        a = (f.get("acodec") or "").lower()
+        ext = (f.get("ext") or "").lower()
+        return v != "none" and a != "none" and ext == "mp4"
+
+    def is_progressive_h264_mp4(f):
+        v = (f.get("vcodec") or "").lower()
+        a = (f.get("acodec") or "").lower()
+        ext = (f.get("ext") or "").lower()
+        return (
+            v != "none"
+            and a != "none"
+            and ext == "mp4"
+            and ("avc1" in v or "h264" in v or v.startswith("h264"))
+        )
+
+    # --------------------------------------------------------
+    # TikTok – no-watermark mp4 only (<=1080p)
+    # --------------------------------------------------------
+    if "tiktok" in extractor:
+        candidates = [
+            f
+            for f in all_formats
+            if (f.get("ext") or "").lower() == "mp4"
+            and "watermark" not in (f.get("format_note") or "").lower()
+        ]
+        if not candidates:
+            candidates = [
+                f for f in all_formats if (f.get("ext") or "").lower() == "mp4"
+            ]
+        max_height = 1080
+
+    # --------------------------------------------------------
+    # YouTube – Safari playable H.264 progressive MP4 (<=1080p)
+    # --------------------------------------------------------
+    elif "youtube" in extractor:
+        candidates = [f for f in all_formats if is_progressive_h264_mp4(f)]
+        max_height = 1080
+
+    # --------------------------------------------------------
+    # Facebook – progressive MP4 (<=720p)
+    # --------------------------------------------------------
+    elif "facebook" in extractor:
+        candidates = [f for f in all_formats if is_progressive_mp4(f)]
+        max_height = 720
+
+    # --------------------------------------------------------
+    # Others – generic progressive MP4 (<=1080p)
+    # --------------------------------------------------------
+    else:
+        candidates = [f for f in all_formats if is_progressive_mp4(f)]
+        max_height = 1080
+
+    # height တစ်ခုစီအတွက် best bitrate format ရွေးမယ်
+    by_height = {}
+    for f in candidates:
+        h = f.get("height") or 0
+        if not h or h > max_height:
+            continue
+        prev = by_height.get(h)
+        if (not prev) or ((f.get("tbr") or 0) > (prev.get("tbr") or 0)):
+            by_height[h] = f
+
+    # ဘာမှမတွေ့ရင်တော့ အရင် static behaviour ကို fallback
+    if not by_height:
+        formats = [
+            {"format_id": "q720", "label": "720p"},
+            {"format_id": "q480", "label": "480p"},
+            {"format_id": "q360", "label": "360p"},
+        ]
+        return {"formats": formats}
+
+    # height အနည်းဆုံး → အမြင့်ဆုံး
+    out = []
+    for h in sorted(by_height.keys()):
+        f = by_height[h]
+        out.append(
+            {
+                "format_id": f.get("format_id"),
+                "label": f"{h}p",
+            }
+        )
+
+    return {"formats": out}
 
 
 # ------------------------------------------------------------
@@ -83,7 +185,7 @@ def _choose_best_format(info, quality_tag: str):
 
     - TikTok: no-watermark mp4 သာရွေးပြီး,
               q720 အတွက် height <= 1080 ထဲက အမြင့်ဆုံး format ကိုယူမယ်
-    - YouTube: format 22 / 18 ကိုသီးသန့် handle လုပ်မယ်
+    - YouTube: format 37 / 22 / 18 ကိုသီးသန့် handle လုပ်မယ်
     - အခြား site တွေ: preferred_max = 720/480/360 နဲ့ generic progressive mp4 ရွေးမယ်
     """
     extractor = (info.get("extractor") or "").lower()
@@ -95,7 +197,8 @@ def _choose_best_format(info, quality_tag: str):
     if "tiktok" in extractor:
         # watermark မပါတဲ့ mp4 formats only
         clean = [
-            f for f in formats
+            f
+            for f in formats
             if (f.get("ext") == "mp4")
             and not ("watermark" in (f.get("format_note") or "").lower())
         ]
@@ -106,7 +209,7 @@ def _choose_best_format(info, quality_tag: str):
 
         # frontend dropdown logic
         if quality_tag == "q720":
-            preferred_max = 1080   # ⭐ q720 ရွေးထားသော်လည်း 1080p ထိ allow
+            preferred_max = 1080  # ⭐ q720 ရွေးထားသော်လည်း 1080p ထိ allow
         elif quality_tag == "q480":
             preferred_max = 480
         else:
@@ -125,27 +228,27 @@ def _choose_best_format(info, quality_tag: str):
         return None
 
     # ---------------------------------------------------------
-    # 2) YOUTUBE – 720/360 H.264 progressive ကိုသီးသန့်ရွေးမယ်
+    # 2) YOUTUBE – 1080/720/360 H.264 progressive ကိုသီးသန့်ရွေးမယ်
     # ---------------------------------------------------------
     def find_by_id(fid):
         return next((f for f in formats if f.get("format_id") == fid), None)
 
     if "youtube" in extractor:
+        # 37 = 1080p H.264 + audio
         # 22 = 720p H.264 + audio
         # 18 = 360p H.264 + audio
         if quality_tag == "q720":
-            for fid in ["22", "18"]:
+            for fid in ["37", "22", "18"]:
                 f = find_by_id(fid)
                 if f:
                     return f
         elif quality_tag == "q480":
-            # 480p အတွက်လည်း 22/18 ထဲက သင့်တော်မဲ့ကို fallback
             for fid in ["22", "18"]:
                 f = find_by_id(fid)
                 if f:
                     return f
         else:  # q360
-            for fid in ["18", "22"]:
+            for fid in ["18", "22", "37"]:
                 f = find_by_id(fid)
                 if f:
                     return f
@@ -162,14 +265,16 @@ def _choose_best_format(info, quality_tag: str):
         preferred_max = 360
 
     prog = [
-        f for f in formats
+        f
+        for f in formats
         if (f.get("vcodec") or "").lower() != "none"
         and (f.get("acodec") or "").lower() != "none"
         and (f.get("ext") or "").lower() == "mp4"
     ]
 
     h264 = [
-        f for f in prog
+        f
+        for f in prog
         if (f.get("vcodec") or "").lower().startswith("avc1")
         or "h264" in (f.get("vcodec") or "").lower()
     ]
@@ -192,18 +297,35 @@ def _choose_best_format(info, quality_tag: str):
 
 def download_video_stable(url: str, quality_tag: str) -> str:
     """
-    URL + quality_tag(q720/q480/q360) ထဲကနေ
-    iPhone/Safari playable ဖြစ်မယ့် progressive mp4 format ကိုရွေးပြီး download လုပ်မယ်။
-    - TikTok URL + q720 ဖြစ်ရင် 1080p ထိရှာပေးမယ် (no-watermark mp4 only)
+    URL + quality_tag
+    - quality_tag = q720/q480/q360  => အရင် stable logic (_choose_best_format)
+    - quality_tag = တကယ့် format_id (e.g. "18", "22", "37", "136"...)
+      => direct download using that format id
     """
-
     base_opts = {
         "quiet": True,
         "noplaylist": True,
         "nocheckcertificate": True,
     }
 
-    # 1) Info only – format table ရယူမယ်
+    # -------------------------------------------------
+    # 0) Direct format_id mode (dynamic resolutions)
+    # -------------------------------------------------
+    if quality_tag not in ("q720", "q480", "q360"):
+        out_tmpl = os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s")
+        ydl_opts = {
+            **base_opts,
+            "format": quality_tag,
+            "outtmpl": out_tmpl,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info2 = ydl.extract_info(url, download=True)
+            path = ydl.prepare_filename(info2)
+        return os.path.basename(path)
+
+    # -------------------------------------------------
+    # 1) OLD behaviour (q720/q480/q360) – backwards compatible
+    # -------------------------------------------------
     with yt_dlp.YoutubeDL({**base_opts, "skip_download": True}) as ydl:
         info = ydl.extract_info(url, download=False)
 
@@ -214,7 +336,6 @@ def download_video_stable(url: str, quality_tag: str) -> str:
     fmt_id = chosen.get("format_id")
     out_tmpl = os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s")
 
-    # 2) actual download
     ydl_opts = {
         **base_opts,
         "format": fmt_id,
@@ -240,7 +361,7 @@ def download(url: str, format_id: str):
         if format_id == SPECIAL_AUDIO_FORMAT:
             filename = download_audio_only(url)
         else:
-            # format_id = q720 / q480 / q360
+            # format_id = q720 / q480 / q360 / or real format_id
             filename = download_video_stable(url, format_id)
 
         return {
