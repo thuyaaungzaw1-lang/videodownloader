@@ -23,29 +23,24 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 app.mount("/files", StaticFiles(directory=DOWNLOAD_DIR), name="files")
 
-# frontendမှာသုံးထားတဲ့ audio-only format id နဲ့ အတူတူပဲထားရမယ်
+# frontend မှာသုံးထားတဲ့ audio-only format id နဲ့ကိုက်စေဖို့
 SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio"
 
 
 @app.get("/")
 def root():
-    return {"status": "ok", "message": "ThuYaAungZaw Downloader (stable up to 720p)"}
+    return {"status": "ok", "message": "ThuYaAungZaw Downloader (YouTube H264 720p/360p)"} 
 
 
 # ------------------------------------------------------------
-# FORMATS – frontend ကိုပြအတွက်ပဲ
+# FORMATS – frontend resolution dropdown ပဲ
 # ------------------------------------------------------------
 @app.get("/formats")
 def get_formats(url: str):
-    """
-    URL ကို check လိုက်မှပေမယ့်, အခု version မှာ
-    frontend ကို အောက်က generic resolution 3 မျိုးပဲ ပြန်ပေးမယ်:
-    720p, 480p, 360p
-    Real quality ကိုတော့ /download မှာ expression နဲ့ handle လုပ်မယ်။
-    """
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
 
+    # UI အတွက် 720p / 480p / 360p ပြမယ် – backend မှာ quality ကို handle လုပ်မယ်
     formats = [
         {"format_id": "q720", "label": "720p"},
         {"format_id": "q480", "label": "480p"},
@@ -55,13 +50,10 @@ def get_formats(url: str):
 
 
 # ------------------------------------------------------------
-# INTERNAL DOWNLOAD HELPERS
+# INTERNAL HELPERS
 # ------------------------------------------------------------
 def download_audio_only(url: str) -> str:
-    """
-    Audio only – bestaudio (m4a/whatever).
-    Frontend က "MP3 / Audio only" လို့ ပြမယ်။
-    """
+    """Audio only – MP3 / M4A (Frontend က MP3 / Audio only)."""
     uid = str(uuid.uuid4())
     out_tmpl = os.path.join(DOWNLOAD_DIR, uid + ".%(ext)s")
 
@@ -80,40 +72,108 @@ def download_audio_only(url: str) -> str:
     return os.path.basename(path)
 
 
-def download_video_stable(url: str, format_id: str) -> str:
+def _choose_best_format(info, quality_tag: str):
     """
-    Stable mp4 video (audio+video together, progressive mp4).
-    q720 / q480 / q360 အလိုက် height limit ချပြီး download မယ်။
+    info = yt-dlp extract_info(..., download=False)
+    quality_tag = 'q720' / 'q480' / 'q360'
+    YouTube ကိုအရင် handle လုပ်ပြီး, မဟုတ်ရင် generic progressive mp4 H.264 ကိုရွေးမယ်။
+    """
+    extractor = (info.get("extractor") or "").lower()
+    formats = info.get("formats", []) or []
+
+    def find_by_id(fid):
+        return next((f for f in formats if f.get("format_id") == fid), None)
+
+    # --------- YouTube သီးသန့်: format 22 (720p), 18 (360p) ---------
+    if "youtube" in extractor:
+        # 22 = 720p H.264 + audio
+        # 18 = 360p H.264 + audio
+        if quality_tag == "q720":
+            for fid in ["22", "18"]:
+                f = find_by_id(fid)
+                if f:
+                    return f
+        elif quality_tag == "q480":
+            # YouTube မှာ 480p progressive မကြီးသလောက် → 18/22 ထဲက သင့်တော်ဆုံးကို
+            for fid in ["22", "18"]:
+                f = find_by_id(fid)
+                if f:
+                    return f
+        else:  # q360
+            for fid in ["18", "22"]:
+                f = find_by_id(fid)
+                if f:
+                    return f
+        # အပြီးသတ်ပြီးလည်း မတွေ့ရင် generic ထဲကို ပြန်ကျမယ်
+
+    # --------- Generic progressive mp4 (H.264ကိုအရင်ရွေး) ---------
+    preferred_max = 720 if quality_tag == "q720" else 480 if quality_tag == "q480" else 360
+
+    prog = [
+        f for f in formats
+        if (f.get("vcodec") or "").lower() != "none"
+        and (f.get("acodec") or "").lower() != "none"
+        and (f.get("ext") or "").lower() == "mp4"
+    ]
+
+    h264 = [
+        f for f in prog
+        if (f.get("vcodec") or "").lower().startswith("avc1")
+        or "h264" in (f.get("vcodec") or "").lower()
+    ]
+
+    def best_under(cands, max_h):
+        ok = [f for f in cands if (f.get("height") or 0) <= max_h]
+        if ok:
+            return sorted(ok, key=lambda x: x.get("height") or 0, reverse=True)[0]
+        if cands:
+            return sorted(cands, key=lambda x: x.
+
+Y O U - K N O W - M E, [12/5/2025 1:47 PM]
+get("height") or 0, reverse=True)[0]
+        return None
+
+    f = best_under(h264, preferred_max)
+    if f:
+        return f
+
+    f = best_under(prog, preferred_max)
+    return f
+
+
+def download_video_stable(url: str, quality_tag: str) -> str:
+    """
+    URL + quality_tag(q720/q480/q360) ထဲကနေ
+    iPhone/Safari playable ဖြစ်မယ့် progressive mp4 format ကိုရွေးပြီး download လုပ်မယ်။
     """
 
-    # pseudo id အလိုက် target height
-    if format_id == "q720":
-        max_h = 720
-    elif format_id == "q480":
-        max_h = 480
-    else:
-        max_h = 360
-
-    # Progressive mp4 only: audio + video ပါရမယ်
-    # height<=max_h ကြိုးစားမယ်, မရရင် fallback အနေနဲ့ best progressive mp4
-    fmt_expr = (
-        f"best[ext=mp4][vcodec!=none][acodec!=none][height<={max_h}]"
-        f"/best[ext=mp4][vcodec!=none][acodec!=none]"
-    )
-
-    out_tmpl = os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s")
-
-    ydl_opts = {
-        "format": fmt_expr,
-        "outtmpl": out_tmpl,
+    base_opts = {
         "quiet": True,
         "noplaylist": True,
         "nocheckcertificate": True,
     }
 
+    # 1) Info only – format table ရယူမယ်
+    with yt_dlp.YoutubeDL({**base_opts, "skip_download": True}) as ydl:
+        info = ydl.extract_info(url, download=False)
+
+    chosen = _choose_best_format(info, quality_tag)
+    if not chosen:
+        raise RuntimeError("No suitable progressive MP4 format found")
+
+    fmt_id = chosen.get("format_id")
+    out_tmpl = os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s")
+
+    # 2) actual download
+    ydl_opts = {
+        **base_opts,
+        "format": fmt_id,
+        "outtmpl": out_tmpl,
+    }
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        path = ydl.prepare_filename(info)
+        info2 = ydl.extract_info(url, download=True)
+        path = ydl.prepare_filename(info2)
 
     return os.path.basename(path)
 
@@ -128,10 +188,9 @@ def download(url: str, format_id: str):
 
     try:
         if format_id == SPECIAL_AUDIO_FORMAT:
-            # MP3 / Audio only
             filename = download_audio_only(url)
         else:
-            # q720 / q480 / q360 → video
+            # format_id = q720 / q480 / q360
             filename = download_video_stable(url, format_id)
 
         return {
