@@ -5,751 +5,322 @@
   <title>Video & MP3 Downloader – ThuYaAungZaw</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- PWA Meta Tags -->
+  <!-- PWA Meta -->
   <meta name="application-name" content="Kaneki Downloader">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="KanekiDL">
-  <meta name="theme-color" content="#ff2e2e">
+  <meta name="theme-color" content="#0b0000">
 
-  <!-- iOS main icon -->
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180x180.png">
-  <link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167x167.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152x152.png">
-
-  <!-- Android / Chrome -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="favicon.ico">
+  <style>
+    :root {
+      --accent: #ff2e2e;
+      --accent-soft: rgba(255, 46, 46, 0.18);
+      --bg: #050000;
+      --text: #fbeaea;
+      --muted: #b89494;
+      --danger: #ff6b6b;
+      --nav-h: 64px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto;
+      min-height:100vh;
+      color:var(--text);
+      background:
+        linear-gradient(rgba(10,0,0,.9), rgba(0,0,0,.98)),
+        url('https://wallpapers.com/images/featured-full/kaneki-xsv5e4ut8mxmqae9.jpg') center/cover fixed;
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;
+      padding-bottom:calc(var(--nav-h) + 90px);
+      overflow-x:hidden;
+      position:relative;
+    }
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(255,46,46,.18), transparent 55%),
+        radial-gradient(circle at 82% 78%, rgba(255,0,0,.2), transparent 55%);
+      mix-blend-mode:screen;
+    }
+    .scanline{position:fixed;inset:0;background-image:linear-gradient(to bottom,rgba(255,0,0,.15)0,transparent 2px);background-size:100% 4px;opacity:.12;pointer-events:none}
+
+    .wrapper{max-width:560px;width:100%;z-index:1}
+    .card{
+      position:relative;overflow:hidden;
+      background:radial-gradient(120% 120% at 0% 0%,rgba(40,0,0,.96),rgba(0,0,0,.98));
+      border-radius:24px;
+      padding:22px 20px 18px;
+      box-shadow:0 24px 60px rgba(0,0,0,.96), 0 0 18px rgba(255,46,46,.35);
+      border:1px solid rgba(255,46,46,.35);
+      backdrop-filter:blur(22px);
+      -webkit-backdrop-filter:blur(22px);
+    }
+
+    .badge{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:6px 12px;border-radius:999px;
+      font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--muted);background:rgba(0,0,0,.7);
+      border:1px solid rgba(255,46,46,.6);
+    }
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:var(--accent);
+      box-shadow:0 0 10px rgba(255,46,46,.9),0 0 18px rgba(255,46,46,.7);
+      animation:ping 1.8s infinite;
+    }
+    @keyframes ping{
+      0%{transform:scale(1);opacity:1}
+      60%{transform:scale(1.8);opacity:0}
+      100%{transform:scale(1.8);opacity:0}
+    }
+
+    h1{font-size:23px;margin:14px 0 8px;background:linear-gradient(90deg,#ff6b6b,#fff,#ff2e2e);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+
+    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+    .chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,46,46,.45);background:rgba(0,0,0,.8);color:var(--muted)}
+    .sm-dot{width:6px;height:6px;border-radius:999px;background:var(--accent);box-shadow:0 0 8px rgba(255,46,46,.7)}
+
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .inwrap{position:relative;margin-bottom:10px}
+    input[type="url"]{
+      width:100%;padding:11px 96px 11px 12px;border-radius:14px;
+      border:1px solid rgba(255,46,46,.7);
+      background:radial-gradient(110% 110% at 0% 0%, rgba(20,0,0,.9), rgba(0,0,0,.98));
+      color:var(--text);font-size:14px;outline:none;
+    }
+    input::placeholder{color:#8b6b6b;font-size:13px}
+    input:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(255,46,46,.5),0 0 20px rgba(255,46,46,.7);transform:translateY(-1px)}
+
+    .pill{
+      position:absolute;top:50%;right:8px;transform:translateY(-50%);
+      font-size:10px;padding:4px 8px;border-radius:999px;
+      background:rgba(0,0,0,.9);color:var(--accent);
+      border:1px solid rgba(255,46,46,.7);letter-spacing:.08em;text-transform:uppercase;
+    }
+
+    #quality{
+      width:100%;margin-top:8px;padding:9px 10px;border-radius:12px;
+      border:1px solid rgba(255,46,46,.7);
+      background:rgba(0,0,0,.95);color:var(--text);font-size:13px;display:none;
+    }
+
+    .btn{
+      width:100%;margin-top:10px;border:0;border-radius:14px;
+      padding:11px 14px;font-size:14px;font-weight:500;
+      cursor:pointer;color:#fff;
+      background:
+        radial-gradient(circle at 0% 0%, #ff6b6b, #ff2e2e),
+        linear-gradient(90deg, #8b0000,#ff2e2e,#ff6b6b);
+      box-shadow:0 0 18px rgba(255,46,46,.8),0 16px 45px rgba(0,0,0,.95);
+      display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+
+    .status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px}
+    .status.error{color:var(--danger)}
+    .result{display:none;margin-top:10px;padding:9px 11px;border-radius:12px;border:1px dashed rgba(255,46,46,.7);background:rgba(0,0,0,.96);font-size:13px}
+    .result a{color:var(--accent)}
+
+    .footer{
+      margin-top:14px;
+      display:flex;justify-content:space-between;align-items:center;gap:8px;
+      font-size:11px;color:var(--muted);flex-wrap:wrap;
+    }
+    .footer a{color:var(--accent);text-decoration:none;font-weight:500}
+    .footer a:hover{text-decoration:underline}
+
+    .view{display:none;animation:fade .25s}
+    .view.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+    .tasks{margin-top:6px;max-height:260px;overflow-y:auto;padding-right:4px}
+    .task{padding:8px 10px;margin-bottom:8px;border-radius:12px;background:rgba(0,0,0,.9);border:1px solid rgba(255,46,46,.3);font-size:12px}
+    .tasktop{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}
+    .ttitle{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tmeta{font-size:11px;color:var(--muted)}
+    .pbar{width:100%;height:5px;border-radius:999px;background:rgba(255,46,46,.18);overflow:hidden;margin-top:4px}
+    .pin{height:100%;width:0;background:linear-gradient(90deg,#ff6b6b,#ff2e2e)}
+
+    .filters{display:flex;gap:6px;margin:4px 0 8px;flex-wrap:wrap}
+    .fchip{border-radius:999px;border:1px solid rgba(255,46,46,.5);background:rgba(0,0,0,.9);color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer}
+    .fchip.active{background:rgba(255,46,46,.16);color:var(--text)}
+    .files{margin-top:6px;max-height:260px;overflow-y:auto;padding-right:4px}
+    .file{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;margin-bottom:8px;border-radius:12px;background:rgba(0,0,0,.9);border:1px solid rgba(255,46,46,.3);font-size:12px}
+    .fmain{flex:1;min-width:0}
+    .ftitle{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .fmeta{font-size:11px;color:var(--muted)}
+    .factions{display:flex;gap:6px}
+    .gbtn{padding:5px 8px;border-radius:999px;border:1px solid rgba(255,46,46,.5);background:transparent;color:var(--text);font-size:11px;cursor:pointer}
+    .empty{font-size:12px;color:var(--muted);text-align:center;padding:20px 4px}
+
+    .mini{
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:calc(var(--nav-h) + 14px);
+      width:min(580px,92%);
+      border-radius:20px;
+      padding:10px 12px;
+      display:flex;align-items:center;gap:10px;
+      background:linear-gradient(180deg, rgba(255,46,46,.18), rgba(0,0,0,.6));
+      border:1px solid rgba(255,46,46,.4);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 28px rgba(0,0,0,.55),0 0 30px rgba(255,46,46,.25);
+      backdrop-filter:blur(24px) saturate(1.2);
+      -webkit-backdrop-filter:blur(24px) saturate(1.2);
+      z-index:60;
+      transition:opacity .25s ease, transform .25s ease;
+    }
+    .mini.hidden{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(8px)}
+    .mini .cover{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(0,0,0,.7);border:1px solid rgba(255,46,46,.45)}
+    .mini .mcol{flex:1;min-width:0}
+    .mini .title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .mini .bar{width:100%;height:6px;border-radius:999px;background:rgba(255,46,46,.18);overflow:hidden;margin-top:5px}
+    .mini .barin{height:100%;width:0;background:linear-gradient(90deg,#ff6b6b,#ff2e2e)}
+    .mini .actions{display:flex;gap:6px;align-items:center}
+    .mini .icon{width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,46,46,.4);background:rgba(0,0,0,.7);display:grid;place-items:center;cursor:pointer}
+
+    .nav{
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:16px;height:var(--nav-h);
+      width:min(520px,92%);
+      border-radius:26px;
+      background:linear-gradient(180deg, rgba(15,0,0,.9), rgba(5,0,0,.96));
+      border:1px solid rgba(255,46,46,.4);
+      display:flex;align-items:center;justify-content:space-around;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 12px 48px rgba(0,0,0,.7),0 0 30px rgba(255,46,46,.18);
+      backdrop-filter:blur(26px) saturate(1.2);
+      -webkit-backdrop-filter:blur(26px) saturate(1.2);
+      z-index:50;overflow:hidden;
+    }
+    .nav .pill{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      height:40px;
+      width:100px;
+      border-radius:22px;
+      background:linear-gradient(180deg, rgba(255,46,46,.22), rgba(0,0,0,.5));
+      border:1px solid rgba(255,46,46,.45);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 18px rgba(0,0,0,.35);
+      transition:left .28s cubic-bezier(.22,.61,.36,1), width .28s ease;
+      z-index:1;
+      left:8px;
+    }
+    .nav .item{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;color:#8a5858;font-size:11px;cursor:pointer;transition:.18s}
+    .nav .item .ico{font-size:18px}
+    .nav .item.active{color:var(--text);transform:scale(1.05)}
+
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:70;padding:16px}
+    .overlay.show{display:flex}
+    .overlay video{max-width:100%;width:100%;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.85);}
+    .overlay-title{font-size:14px;margin-bottom:8px}
+    .overlay-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:999px;border:none;background:#bf0000;color:#fff;font-size:20px;cursor:pointer}
+
+    @media (max-width:520px){
+      .card{padding:20px 16px 16px}
+      h1{font-size:20px}
+    }
+  </style>
 </head>
-
-<style>
-  :root {
-    --accent: #ff2e2e;
-    --accent-soft: rgba(255, 46, 46, 0.18);
-    --bg-dark: #050000;
-    --card-bg: rgba(15, 0, 0, 0.96);
-    --text-main: #fbeaea;
-    --text-muted: #b89494;
-    --danger: #ff6b6b;
-  }
-
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  body {
-    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    min-height: 100vh;
-    background:
-      linear-gradient(rgba(10, 0, 0, 0.9), rgba(0, 0, 0, 0.98)),
-      url('https://wallpapers.com/images/featured-full/kaneki-xsv5e4ut8mxmqae9.jpg') center/cover fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 24px;
-    padding-bottom: 100px; /* bottom nav */
-    color: var(--text-main);
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(circle at 20% 30%, rgba(255, 46, 46, 0.18) 0%, transparent 55%),
-      radial-gradient(circle at 80% 70%, rgba(139, 0, 0, 0.22) 0%, transparent 55%);
-    pointer-events: none;
-    mix-blend-mode: screen;
-  }
-
-  .scanline {
-    position: fixed;
-    inset: 0;
-    background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0.15) 0, transparent 2px);
-    background-size: 100% 4px;
-    opacity: 0.12;
-    mix-blend-mode: soft-light;
-    pointer-events: none;
-    animation: scan 7s linear infinite;
-  }
-
-  @keyframes scan {
-    0% { transform: translateY(-8px); }
-    100% { transform: translateY(8px); }
-  }
-
-  .orb {
-    position: fixed;
-    border-radius: 999px;
-    background: radial-gradient(circle, rgba(255, 46, 46, 0.7), transparent 60%);
-    filter: blur(2px);
-    mix-blend-mode: screen;
-    pointer-events: none;
-    opacity: 0.4;
-  }
-
-  .orb-1 { width: 90px; height: 90px; top: 12%; left: 6%; animation: float1 12s ease-in-out infinite alternate; }
-  .orb-2 { width: 70px; height: 70px; bottom: 10%; right: 10%; animation: float2 10s ease-in-out infinite alternate; }
-
-  @keyframes float1 {
-    0% { transform: translate3d(0,0,0); }
-    100% { transform: translate3d(16px,10px,0); }
-  }
-  @keyframes float2 {
-    0% { transform: translate3d(0,0,0); }
-    100% { transform: translate3d(-14px,-12px,0); }
-  }
-
-  .wrapper {
-    max-width: 520px;
-    width: 100%;
-    z-index: 1;
-  }
-
-  .card {
-    background: radial-gradient(circle at top left, rgba(40, 0, 0, 0.96), rgba(0, 0, 0, 0.98));
-    border-radius: 24px;
-    padding: 22px 20px 18px;
-    border: 1px solid rgba(255, 46, 46, 0.4);
-    box-shadow:
-      0 0 18px rgba(255, 46, 46, 0.45),
-      0 24px 60px rgba(0, 0, 0, 0.98);
-    backdrop-filter: blur(22px);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    border: 1px solid rgba(255, 46, 46, 0.8);
-    box-shadow: 0 0 25px rgba(255, 46, 46, 0.9);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    pointer-events: none;
-  }
-
-  .card:hover::before {
-    opacity: 0.7;
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(255, 46, 46, 0.6);
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .badge-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: var(--accent);
-    box-shadow:
-      0 0 8px rgba(255, 46, 46, 0.9),
-      0 0 16px rgba(255, 46, 46, 0.7);
-    animation: ping 1.8s infinite;
-  }
-
-  @keyframes ping {
-    0% { transform: scale(1); opacity: 1; }
-    70% { transform: scale(1.8); opacity: 0; }
-    100% { transform: scale(1.8); opacity: 0; }
-  }
-
-  h1 {
-    font-size: 23px;
-    margin-top: 14px;
-    margin-bottom: 6px;
-    background: linear-gradient(90deg, #ff6b6b, #ffffff, #ff2e2e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 14px rgba(255, 46, 46, 0.6);
-  }
-
-  .subtitle {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.6;
-    margin-bottom: 16px;
-  }
-
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 16px;
-  }
-
-  .chip {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(255, 46, 46, 0.5);
-    color: var(--text-muted);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .chip-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    background: var(--accent);
-    box-shadow: 0 0 8px rgba(255, 46, 46, 0.7);
-  }
-
-  label {
-    display: block;
-    font-size: 12px;
-    margin-bottom: 6px;
-    color: var(--text-muted);
-  }
-
-  .input-wrapper {
-    position: relative;
-    margin-bottom: 10px;
-  }
-
-  input[type="url"] {
-    width: 100%;
-    padding: 11px 96px 11px 12px;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 46, 46, 0.7);
-    background: radial-gradient(circle at top left, rgba(20, 0, 0, 0.9), rgba(0, 0, 0, 0.98));
-    color: var(--text-main);
-    font-size: 14px;
-    outline: none;
-    transition: border 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
-  }
-
-  input[type="url"]::placeholder {
-    color: #8b6b6b;
-    font-size: 13px;
-  }
-
-  input[type="url"]:focus {
-    border-color: var(--accent);
-    box-shadow:
-      0 0 0 1px rgba(255, 46, 46, 0.5),
-      0 0 20px rgba(255, 46, 46, 0.7);
-    transform: translateY(-1px);
-  }
-
-  .service-pill {
-    position: absolute;
-    top: 50%;
-    right: 8px;
-    transform: translateY(-50%);
-    font-size: 10px;
-    padding: 4px 8px;
-    border-radius: 999px;
-    background: rgba(0, 0, 0, 0.95);
-    color: var(--accent);
-    border: 1px solid rgba(255, 46, 46, 0.8);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  select#quality {
-    width: 100%;
-    margin-top: 8px;
-    padding: 9px 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 46, 46, 0.7);
-    background: rgba(0, 0, 0, 0.95);
-    color: var(--text-main);
-    font-size: 13px;
-    display: none;
-    outline: none;
-  }
-
-  select#quality:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(255, 46, 46, 0.5);
-  }
-
-  button.main-btn {
-    width: 100%;
-    border: none;
-    border-radius: 14px;
-    padding: 11px 14px;
-    margin-top: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    background:
-      radial-gradient(circle at 0% 0%, #ff6b6b, #ff2e2e),
-      linear-gradient(90deg, #8b0000, #ff2e2e, #ff6b6b);
-    color: white;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 44px;
-    box-shadow:
-      0 0 18px rgba(255, 46, 46, 0.8),
-      0 16px 45px rgba(0, 0, 0, 0.95);
-    transition: transform 0.09s ease, box-shadow 0.09s ease, filter 0.09s ease;
-  }
-
-  button.main-btn:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.08);
-  }
-
-  button.main-btn:active {
-    transform: translateY(0);
-    box-shadow:
-      0 10px 30px rgba(0, 0, 0, 1),
-      0 0 18px rgba(255, 46, 46, 0.8);
-  }
-
-  .status {
-    font-size: 12px;
-    margin-top: 10px;
-    min-height: 18px;
-    color: var(--text-muted);
-  }
-
-  .status.error {
-    color: var(--danger);
-  }
-
-  .result {
-    margin-top: 10px;
-    padding: 9px 11px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.96);
-    border: 1px dashed rgba(255, 46, 46, 0.7);
-    font-size: 13px;
-    display: none;
-  }
-
-  .result a {
-    color: var(--accent);
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .result a:hover {
-    text-decoration: underline;
-  }
-
-  .disclaimer {
-    margin-top: 12px;
-    font-size: 11px;
-    color: var(--text-muted);
-    line-height: 1.5;
-  }
-
-  .footer {
-    margin-top: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-
-  .footer a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  .footer a:hover {
-    text-decoration: underline;
-  }
-
-  /* VIEWS */
-  .view-section {
-    display: none;
-    animation: fadeIn 0.25s;
-  }
-  .view-section.active {
-    display: block;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* TASKS */
-  .tasks-list {
-    margin-top: 6px;
-    max-height: 260px;
-    overflow-y: auto;
-    padding-right: 4px;
-  }
-
-  .task-item {
-    padding: 8px 10px;
-    margin-bottom: 8px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(255, 46, 46, 0.3);
-    font-size: 12px;
-  }
-
-  .task-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 4px;
-  }
-
-  .task-title {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .task-meta {
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-
-  .progress-outer {
-    width: 100%;
-    height: 5px;
-    border-radius: 999px;
-    background: rgba(255, 46, 46, 0.18);
-    overflow: hidden;
-    margin-top: 4px;
-  }
-
-  .progress-inner {
-    height: 100%;
-    width: 0%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, #ff6b6b, #ff2e2e);
-  }
-
-  .task-status {
-    margin-top: 2px;
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-
-  .empty {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-align: center;
-    padding: 20px 4px;
-  }
-
-  /* FILES */
-  .files-filters {
-    display: flex;
-    gap: 6px;
-    margin: 4px 0 8px;
-    flex-wrap: wrap;
-  }
-
-  .filter-chip {
-    border-radius: 999px;
-    border: 1px solid rgba(255, 46, 46, 0.5);
-    background: rgba(0, 0, 0, 0.9);
-    font-size: 11px;
-    padding: 4px 10px;
-    cursor: pointer;
-    color: var(--text-muted);
-  }
-
-  .filter-chip.active {
-    background: rgba(255, 46, 46, 0.16);
-    color: var(--text-main);
-  }
-
-  .files-list {
-    margin-top: 6px;
-    max-height: 260px;
-    overflow-y: auto;
-    padding-right: 4px;
-  }
-
-  .file-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 8px 10px;
-    margin-bottom: 8px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(255, 46, 46, 0.3);
-    font-size: 12px;
-  }
-
-  .file-main {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .file-title {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .file-meta {
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-
-  .file-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .ghost-btn {
-    padding: 3px 8px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 46, 46, 0.5);
-    background: transparent;
-    color: var(--text-main);
-    font-size: 11px;
-    cursor: pointer;
-  }
-
-  .ghost-btn:hover {
-    background: rgba(255, 46, 46, 0.18);
-  }
-
-  /* BOTTOM NAV */
-  .nav-bar {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 400px;
-    height: 60px;
-    background: rgba(15, 0, 0, 0.97);
-    border-radius: 30px;
-    border: 1px solid rgba(255, 46, 46, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    backdrop-filter: blur(20px);
-    z-index: 30;
-  }
-
-  .nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    color: #885555;
-    font-size: 10px;
-    padding: 10px;
-    cursor: pointer;
-    transition: 0.18s;
-  }
-
-  .nav-item span.nav-icon {
-    font-size: 18px;
-  }
-
-  .nav-item.active {
-    color: var(--accent);
-    transform: scale(1.08);
-  }
-
-  /* OVERLAYS */
-  .overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.94);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    z-index: 40;
-    padding: 16px;
-  }
-
-  .overlay.show {
-    display: flex;
-  }
-
-  .overlay video,
-  .overlay audio {
-    max-width: 100%;
-    width: 100%;
-  }
-
-  .overlay-title {
-    font-size: 14px;
-    margin-bottom: 8px;
-  }
-
-  .overlay-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
-    border: none;
-    background: #bf0000;
-    color: #fff;
-    font-size: 20px;
-    cursor: pointer;
-  }
-
-  @media (max-width: 520px) {
-    .card {
-      padding: 20px 16px 16px;
-    }
-    h1 {
-      font-size: 20px;
-    }
-  }
-</style>
-
 <body>
   <div class="scanline"></div>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
 
   <div class="wrapper">
     <div class="card">
-      <div class="badge">
-        <span class="badge-dot"></span>
-        <span><strong>ThuYaAungZaw</strong></span>
-      </div>
+      <div class="badge"><span class="dot"></span><strong>THUYAAUNGZAW</strong></div>
 
       <!-- HOME -->
-      <div id="view-home" class="view-section active">
+      <section id="view-home" class="view active">
         <h1>Video & MP3 Downloader</h1>
-        <p class="subtitle">
-          Paste any <strong>TikTok</strong>, <strong>Facebook</strong> or <strong>YouTube</strong> link.
-          Choose <strong>Video</strong> or <strong>MP3</strong> and download directly.
-        </p>
+        <p class="sub">Paste a <b>TikTok</b>, <b>Facebook</b> or <b>YouTube</b> link. Choose <b>Video</b> or <b>MP3</b> and download directly.</p>
 
         <div class="chips">
-          <span class="chip"><span class="chip-dot"></span>TikTok / Facebook / YouTube</span>
-          <span class="chip"><span class="chip-dot"></span>MP4 + MP3 (audio only)</span>
-          <span class="chip"><span class="chip-dot"></span>Offline library in Files tab</span>
-          <span class="chip"><span class="chip-dot"></span>Not allow photo+music</span>
+          <span class="chip"><span class="sm-dot"></span>TikTok / Facebook / YouTube</span>
+          <span class="chip"><span class="sm-dot"></span>MP4 + MP3 (audio only)</span>
+          <span class="chip"><span class="sm-dot"></span>Offline library in Files</span>
+          <span class="chip"><span class="sm-dot"></span>No photo+music posts</span>
         </div>
 
         <label for="url">Video URL</label>
-        <div class="input-wrapper">
-          <input id="url" type="url" placeholder="Paste a TikTok, Facebook or YouTube link..." autocomplete="off" />
-          <span id="service-pill" class="service-pill">Auto detect</span>
+        <div class="inwrap">
+          <input id="url" type="url" placeholder="Paste a TikTok, Facebook or YouTube link…" autocomplete="off">
+          <span id="service-pill" class="pill">Auto</span>
         </div>
 
         <select id="quality"></select>
 
-        <button id="download-btn" type="button" class="main-btn">
-          <span>💟 Download / Convert 💟</span>
-        </button>
+        <button id="download-btn" class="btn" type="button">💟 Download / Convert 💟</button>
 
-        <div id="status" class="status">
-          Step 1 – Paste Link · Step 2 – Choose quality/MP3 · Step 3 – Download ⬇
-        </div>
+        <div id="status" class="status">Step 1 – Paste • Step 2 – Choose quality/MP3 • Step 3 – Download ⬇</div>
         <div id="result" class="result"></div>
-
-        <p class="disclaimer">
-          Only download videos or music that you have permission to save.
-          Respect each platform's copyright rules.
-        </p>
 
         <div class="footer">
           <span>Developer by <strong>ThuYaAungZaw</strong></span>
           <a href="https://www.facebook.com/thura.aungzaw.69" target="_blank" rel="noopener">Facebook</a>
         </div>
-      </div>
+      </section>
 
       <!-- TASKS -->
-      <div id="view-tasks" class="view-section">
+      <section id="view-tasks" class="view">
         <h1>Tasks</h1>
-        <p class="subtitle">
-          Active downloads and recent history. You can see progress and status here.
-        </p>
-        <div id="tasks-list" class="tasks-list"></div>
-      </div>
+        <p class="sub">Active downloads and recent history.</p>
+        <div id="tasks-list" class="tasks"></div>
+      </section>
 
       <!-- FILES -->
-      <div id="view-files" class="view-section">
+      <section id="view-files" class="view">
         <h1>Files (Offline)</h1>
-        <p class="subtitle">
-          Finished downloads are saved here.<strong>offline</strong>, as long as the app can open.
-        </p>
+        <p class="sub">Finished downloads live here. Works even when you’re offline.</p>
 
-        <div class="files-filters">
-          <button class="filter-chip active" data-filter="all">All</button>
-          <button class="filter-chip" data-filter="video">Videos</button>
-          <button class="filter-chip" data-filter="audio">Music (MP3)</button>
+        <div class="filters">
+          <button class="fchip active" data-filter="all">All</button>
+          <button class="fchip" data-filter="video">Videos</button>
+          <button class="fchip" data-filter="audio">Music</button>
         </div>
 
-        <div id="files-list" class="files-list"></div>
-      </div>
+        <div id="files-list" class="files"></div>
+      </section>
     </div>
   </div>
 
-  <!-- BOTTOM NAV -->
-  <div class="nav-bar">
-    <div class="nav-item active" data-tab="home">
-      <span class="nav-icon">🏠</span>
-      <span>Home</span>
+  <!-- MINI AUDIO PLAYER -->
+  <div id="mini" class="mini hidden" aria-live="polite">
+    <div class="cover" id="mini-cover">🎵</div>
+    <div class="mcol">
+      <div class="title" id="mini-title">—</div>
+      <div class="bar"><div id="mini-bar" class="barin"></div></div>
     </div>
-    <div class="nav-item" data-tab="tasks">
-      <span class="nav-icon">📥</span>
-      <span>Tasks</span>
-    </div>
-    <div class="nav-item" data-tab="files">
-      <span class="nav-icon">📂</span>
-      <span>Files</span>
+    <div class="actions">
+      <button class="icon" data-act="back10">⏪</button>
+      <button class="icon" data-act="toggle" id="mini-toggle">⏯</button>
+      <button class="icon" data-act="fwd10">⏩</button>
+      <button class="icon" data-act="close">✕</button>
     </div>
   </div>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <div class="pill" id="nav-pill"></div>
+    <div class="item active" data-tab="home"><span class="ico">🏠</span><span>Home</span></div>
+    <div class="item" data-tab="tasks"><span class="ico">📥</span><span>Tasks</span></div>
+    <div class="item" data-tab="files"><span class="ico">📂</span><span>Files</span></div>
+  </nav>
 
   <!-- VIDEO OVERLAY -->
   <div id="video-overlay" class="overlay">
     <button class="overlay-close" type="button" onclick="closeVideoOverlay()">✕</button>
-    <div class="overlay-title" id="video-overlay-title"></div>
+    <div class="overlay-title" id="video-title"></div>
     <video id="offline-video" controls playsinline webkit-playsinline></video>
-  </div>
-
-  <!-- AUDIO OVERLAY -->
-  <div id="audio-overlay" class="overlay">
-    <button class="overlay-close" type="button" onclick="closeAudioOverlay()">✕</button>
-    <div class="overlay-title" id="audio-overlay-title"></div>
-    <audio id="offline-audio" controls></audio>
   </div>
 
   <script>
     const API_BASE = "https://videodownloader-production-0c88.up.railway.app";
+    const SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio";
 
     const urlInput = document.getElementById("url");
     const servicePill = document.getElementById("service-pill");
@@ -758,356 +329,309 @@
     const downloadBtn = document.getElementById("download-btn");
     const qualitySelect = document.getElementById("quality");
 
-    const tasksListEl = document.getElementById("tasks-list");
-    const filesListEl = document.getElementById("files-list");
+    const tasksEl = document.getElementById("tasks-list");
+    const filesEl = document.getElementById("files-list");
+    const filterChips = document.querySelectorAll(".fchip");
 
-    const navItems = document.querySelectorAll(".nav-item");
     const views = {
       home: document.getElementById("view-home"),
       tasks: document.getElementById("view-tasks"),
       files: document.getElementById("view-files")
     };
 
-    const fileFilterChips = document.querySelectorAll(".filter-chip");
+    const nav = document.getElementById("nav");
+    const navPill = document.getElementById("nav-pill");
+    const navItems = nav.querySelectorAll(".item");
 
-    const audioOverlay = document.getElementById("audio-overlay");
-    const audioOverlayTitle = document.getElementById("audio-overlay-title");
-    const offlineAudio = document.getElementById("offline-audio");
+    const mini = document.getElementById("mini");
+    const miniTitle = document.getElementById("mini-title");
+    const miniBar = document.getElementById("mini-bar");
+    const miniToggle = document.getElementById("mini-toggle");
+    const miniCover = document.getElementById("mini-cover");
 
     const videoOverlay = document.getElementById("video-overlay");
-    const videoOverlayTitle = document.getElementById("video-overlay-title");
     const offlineVideo = document.getElementById("offline-video");
+    const videoTitle = document.getElementById("video-title");
 
-    const SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio";
+    const audio = new Audio();
+    audio.preload = "metadata";
 
     let lastFormats = [];
     let lastUrl = "";
     let tasks = [];
     let filesFilter = "all";
     let db = null;
+    let currentFile = null;
+    let rafId = null;
+    let currentVideoUrl = null;
 
-    // --- Helpers ---
-    function setStatus(msg, isError) {
+    const setStatus = (msg, err=false)=>{
       statusEl.textContent = msg;
-      statusEl.classList.toggle("error", !!isError);
-    }
+      statusEl.classList.toggle("error", !!err);
+    };
+    const esc = s => (s||"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
 
-    function detectService(url) {
-      if (!url) return "Auto detect";
-      const u = url.toLowerCase();
-      if (u.includes("tiktok")) return "TikTok";
-      if (u.includes("facebook") || u.includes("fb.watch")) return "Facebook";
-      if (u.includes("youtube") || u.includes("youtu.be")) return "YouTube";
+    const detectService = u=>{
+      if(!u) return "Auto Detect";
+      u = u.toLowerCase();
+      if(u.includes("tiktok")) return "TikTok";
+      if(u.includes("facebook")||u.includes("fb.watch")) return "Facebook";
+      if(u.includes("youtube")||u.includes("youtu.be")) return "YouTube";
       return "Unknown Error";
-    }
+    };
 
-    function escapeHTML(str) {
-      return (str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    // --- IndexedDB (offline library) ---
-    function openDatabase() {
-      if (db) return Promise.resolve(db);
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open("kaneki_downloader", 1);
-        request.onupgradeneeded = (event) => {
-          const database = event.target.result;
-          if (!database.objectStoreNames.contains("files")) {
-            const store = database.createObjectStore("files", { keyPath: "id", autoIncrement: true });
-            store.createIndex("by_category", "category", { unique: false });
-            store.createIndex("by_createdAt", "createdAt", { unique: false });
+    // ---- DB ----
+    function openDB(){
+      if(db) return Promise.resolve(db);
+      return new Promise((resolve,reject)=>{
+        const req = indexedDB.open("kaneki_downloader",1);
+        req.onupgradeneeded = e=>{
+          const d = e.target.result;
+          if(!d.objectStoreNames.contains("files")){
+            const s = d.createObjectStore("files",{keyPath:"id",autoIncrement:true});
+            s.createIndex("by_category","category",{unique:false});
+            s.createIndex("by_createdAt","createdAt",{unique:false});
           }
         };
-        request.onsuccess = (event) => {
-          db = event.target.result;
-          resolve(db);
-        };
-        request.onerror = () => reject(request.error);
+        req.onsuccess = e=>{db=e.target.result;resolve(db);};
+        req.onerror = ()=>reject(req.error);
+      });
+    }
+    async function dbAdd(rec){
+      const d = await openDB();
+      return new Promise((res,rej)=>{
+        const tx = d.transaction("files","readwrite");
+        tx.objectStore("files").add(rec).onsuccess = ev=>res(ev.target.result);
+        tx.onerror = ()=>rej(tx.error);
+      });
+    }
+    async function dbAll(){
+      const d = await openDB();
+      return new Promise((res,rej)=>{
+        const tx = d.transaction("files","readonly");
+        tx.objectStore("files").getAll().onsuccess = ev=>res(ev.target.result||[]);
+        tx.onerror = ()=>rej(tx.error);
+      });
+    }
+    async function dbGet(id){
+      const d = await openDB();
+      return new Promise((res,rej)=>{
+        const tx = d.transaction("files","readonly");
+        tx.objectStore("files").get(id).onsuccess = ev=>res(ev.target.result||null);
+        tx.onerror = ()=>rej(tx.error);
+      });
+    }
+    async function dbDel(id){
+      const d = await openDB();
+      return new Promise((res,rej)=>{
+        const tx = d.transaction("files","readwrite");
+        tx.objectStore("files").delete(id).onsuccess = ()=>res();
+        tx.onerror = ()=>rej(tx.error);
       });
     }
 
-    async function saveFileRecord(record) {
-      const database = await openDatabase();
-      return new Promise((resolve, reject) => {
-        const tx = database.transaction("files", "readwrite");
-        const store = tx.objectStore("files");
-        const req = store.add(record);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      });
+    // ---- NAV ----
+    function updateNavPill(tab){
+      const active = [...navItems].find(i=>i.dataset.tab===tab);
+      if(!active) return;
+      const itemWidth = active.offsetWidth;
+      const pillWidth = itemWidth + 16;
+      const left = active.offsetLeft + (itemWidth - pillWidth)/2;
+      navPill.style.width = pillWidth + "px";
+      navPill.style.left = left + "px";
     }
-
-    async function getAllFiles() {
-      const database = await openDatabase();
-      return new Promise((resolve, reject) => {
-        const tx = database.transaction("files", "readonly");
-        const store = tx.objectStore("files");
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result || []);
-        req.onerror = () => reject(req.error);
-      });
+    function activateTab(tab){
+      Object.keys(views).forEach(k=>views[k].classList.toggle("active",k===tab));
+      navItems.forEach(i=>i.classList.toggle("active",i.dataset.tab===tab));
+      updateNavPill(tab);
+      if(tab==="files") loadFilesUI();
     }
+    navItems.forEach(i=>i.addEventListener("click",()=>activateTab(i.dataset.tab)));
+    window.addEventListener("resize", ()=>{
+      const active = [...navItems].find(i=>i.classList.contains("active"));
+      if(active) updateNavPill(active.dataset.tab);
+    });
 
-    async function getFileById(id) {
-      const database = await openDatabase();
-      return new Promise((resolve, reject) => {
-        const tx = database.transaction("files", "readonly");
-        const store = tx.objectStore("files");
-        const req = store.get(id);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    async function deleteFileById(id) {
-      const database = await openDatabase();
-      return new Promise((resolve, reject) => {
-        const tx = database.transaction("files", "readwrite");
-        const store = tx.objectStore("files");
-        const req = store.delete(id);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    // --- Nav / Views ---
-    function switchTab(tab) {
-      Object.keys(views).forEach((key) => {
-        views[key].classList.toggle("active", key === tab);
-      });
-      navItems.forEach((item) => {
-        item.classList.toggle("active", item.dataset.tab === tab);
-      });
-
-      if (tab === "files") {
-        loadFilesToUI();
-      }
-    }
-
-    navItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        const tab = item.dataset.tab;
-        switchTab(tab);
+    // ---- Filters ----
+    filterChips.forEach(c=>{
+      c.addEventListener("click",()=>{
+        filterChips.forEach(x=>x.classList.remove("active"));
+        c.classList.add("active");
+        filesFilter = c.dataset.filter || "all";
+        loadFilesUI();
       });
     });
 
-    // --- Filters (Files) ---
-    fileFilterChips.forEach((chip) => {
-      chip.addEventListener("click", () => {
-        fileFilterChips.forEach((c) => c.classList.remove("active"));
-        chip.classList.add("active");
-        filesFilter = chip.dataset.filter || "all";
-        loadFilesToUI();
-      });
+    // ---- URL input ----
+    urlInput.addEventListener("input", ()=>{
+      servicePill.textContent = detectService(urlInput.value.trim());
+      lastFormats = []; lastUrl=""; qualitySelect.style.display="none"; qualitySelect.innerHTML="";
+      resultEl.style.display="none";
+      setStatus("Detecting link…",false);
     });
 
-    // --- URL input ---
-    urlInput.addEventListener("input", () => {
-      const service = detectService(urlInput.value.trim());
-      servicePill.textContent = service;
-
-      qualitySelect.style.display = "none";
-      qualitySelect.innerHTML = "";
-      lastFormats = [];
-      lastUrl = "";
-      resultEl.style.display = "none";
-      setStatus("Detecting link…", false);
-    });
-
-    // --- Fetch formats ---
-    async function fetchFormats(url) {
-      const reqUrl = API_BASE + "/formats?url=" + encodeURIComponent(url);
-      const res = await fetch(reqUrl);
-      if (!res.ok) throw new Error("Failed to load formats");
-      const data = await res.json();
-      return data.formats || [];
+    // ---- Formats ----
+    async function fetchFormats(u){
+      const r = await fetch(`${API_BASE}/formats?url=${encodeURIComponent(u)}`);
+      if(!r.ok) throw new Error("formats failed");
+      const d = await r.json();
+      return d.formats || [];
+    }
+    function populateFormats(fs){
+      lastFormats = [{id:SPECIAL_AUDIO_FORMAT,label:"🎵 MP3 / Audio only",category:"audio"}];
+      fs.forEach(f=> lastFormats.push({id:f.format_id,label:f.label || (f.ext||"mp4"),category:"video"}));
+      qualitySelect.innerHTML="";
+      lastFormats.forEach(f=>{
+        const o=document.createElement("option");
+        o.value=f.id;o.textContent=f.label;o.dataset.category=f.category;
+        qualitySelect.appendChild(o);
+      });
+      qualitySelect.style.display="block";
     }
 
-    function populateQualitySelect(formats) {
-      lastFormats = [];
-
-      // Custom MP3 (audio only) format
-      lastFormats.push({
-        id: SPECIAL_AUDIO_FORMAT,
-        label: "🎵 MP3 / Audio only",
-        category: "audio"
-      });
-
-      formats.forEach((f) => {
-        const label = f.label || (f.ext || "mp4") + (f.resolution ? " · " + f.resolution : "");
-        lastFormats.push({
-          id: f.format_id,
-          label: label,
-          category: "video"
-        });
-      });
-
-      qualitySelect.innerHTML = "";
-      lastFormats.forEach((fmt) => {
-        const opt = document.createElement("option");
-        opt.value = fmt.id;
-        opt.textContent = fmt.label;
-        opt.dataset.category = fmt.category;
-        qualitySelect.appendChild(opt);
-      });
-      qualitySelect.style.display = "block";
-    }
-
-    // --- Tasks UI ---
-    function renderTasks() {
-      if (!tasksListEl) return;
-      if (!tasks.length) {
-        tasksListEl.innerHTML = '<div class="empty">No downloads yet.</div>';
-        return;
-      }
-
-      const html = tasks
-        .slice()
-        .sort((a, b) => b.createdAt - a.createdAt)
-        .map((t) => {
-          const pct = typeof t.progress === "number" ? Math.max(0, Math.min(100, t.progress)) : 0;
-          return `
-            <div class="task-item">
-              <div class="task-top">
-                <div class="task-title">${escapeHTML(t.title || t.filename || "Download")}</div>
-                <div class="task-meta">${t.category === "audio" ? "MP3" : "Video"}</div>
-              </div>
-              <div class="task-meta">
-                ${t.status || "Queued"}${pct ? " · " + pct + "%" : ""}
-              </div>
-              <div class="progress-outer">
-                <div class="progress-inner" style="width:${pct}%;"></div>
-              </div>
+    // ---- Tasks ----
+    function renderTasks(){
+      if(!tasks.length){tasksEl.innerHTML='<div class="empty">No downloads yet.</div>';return;}
+      tasksEl.innerHTML = tasks.slice().sort((a,b)=>b.createdAt-a.createdAt).map(t=>{
+        const pct = Math.max(0,Math.min(100, t.progress|0));
+        return `
+          <div class="task">
+            <div class="tasktop">
+              <div class="ttitle">${esc(t.title||t.filename||"Download")}</div>
+              <div class="tmeta">${t.category==="audio"?"MP3":"Video"}</div>
             </div>
-          `;
-        })
-        .join("");
-      tasksListEl.innerHTML = html;
+            <div class="tmeta">${t.status||"Queued"}${pct?` · ${pct}%`:""}</div>
+            <div class="pbar"><div class="pin" style="width:${pct}%"></div></div>
+          </div>`;
+      }).join("");
     }
+    const addTask = t=>{tasks.push(t);renderTasks();};
+    const patchTask = (id,p)=>{const t=tasks.find(x=>x.id===id);if(t)Object.assign(t,p);renderTasks();};
 
-    function addTask(task) {
-      tasks.push(task);
-      renderTasks();
-    }
-
-    function updateTask(id, patch) {
-      const t = tasks.find((x) => x.id === id);
-      if (!t) return;
-      Object.assign(t, patch);
-      renderTasks();
-    }
-
-    // --- Files UI ---
-    async function loadFilesToUI() {
-      if (!filesListEl) return;
-      try {
-        const allFiles = await getAllFiles();
-        if (!allFiles.length) {
-          filesListEl.innerHTML = '<div class="empty">No saved files yet.</div>';
-          return;
-        }
-        const sorted = allFiles.sort((a, b) => b.createdAt - a.createdAt);
-        const filtered =
-          filesFilter === "all" ? sorted : sorted.filter((f) => f.category === filesFilter);
-
-        if (!filtered.length) {
-          filesListEl.innerHTML = '<div class="empty">No files in this category.</div>';
-          return;
-        }
-
-        const html = filtered
-          .map((f) => {
-            const sizeMB = f.size ? (f.size / (1024 * 1024)).toFixed(1) : "?";
-            const label = f.category === "audio" ? "Music" : "Video";
-            return `
-              <div class="file-item">
-                <div class="file-main">
-                  <div class="file-title">${escapeHTML(f.title || f.filename || "Untitled")}</div>
-                  <div class="file-meta">${label} · ${sizeMB} MB</div>
-                </div>
-                <div class="file-actions">
-                  <button class="ghost-btn" data-action="play" data-id="${f.id}">Play</button>
-                  <button class="ghost-btn" data-action="download" data-id="${f.id}">Save</button>
-                  <button class="ghost-btn" data-action="delete" data-id="${f.id}">✕</button>
-                </div>
+    // ---- Files UI ----
+    async function loadFilesUI(){
+      try{
+        const all = await dbAll();
+        if(!all.length){filesEl.innerHTML='<div class="empty">No saved files yet.</div>';return;}
+        const sorted = all.sort((a,b)=>b.createdAt-a.createdAt);
+        const list = filesFilter==="all" ? sorted : sorted.filter(f=>f.category===filesFilter);
+        if(!list.length){filesEl.innerHTML='<div class="empty">No files in this category.</div>';return;}
+        filesEl.innerHTML = list.map(f=>{
+          const mb = f.size ? (f.size/(1024*1024)).toFixed(1) : "?";
+          const label = f.category==="audio"?"Music":"Video";
+          return `
+            <div class="file" data-id="${f.id}">
+              <div class="fmain">
+                <div class="ftitle">${esc(f.title||f.filename||"Untitled")}</div>
+                <div class="fmeta">${label} · ${mb} MB</div>
               </div>
-            `;
-          })
-          .join("");
-
-        filesListEl.innerHTML = html;
-      } catch (e) {
+              <div class="factions">
+                <button class="gbtn" data-act="play">Play</button>
+                <button class="gbtn" data-act="save">Save</button>
+                <button class="gbtn" data-act="del">✕</button>
+              </div>
+            </div>`;
+        }).join("");
+      }catch(e){
         console.error(e);
-        filesListEl.innerHTML =
-          '<div class="empty">Storage not available in this browser.</div>';
+        filesEl.innerHTML='<div class="empty">Storage not available.</div>';
       }
     }
 
-    // Event delegation for files list
-    if (filesListEl) {
-      filesListEl.addEventListener("click", async (e) => {
-        const btn = e.target.closest("button[data-action]");
-        if (!btn) return;
-        const id = Number(btn.dataset.id);
-        const action = btn.dataset.action;
-        if (!id) return;
+    filesEl.addEventListener("click", async (e)=>{
+      const btn = e.target.closest(".gbtn"); if(!btn) return;
+      const id = Number(btn.closest(".file").dataset.id);
+      const f = await dbGet(id); if(!f) return;
 
-        try {
-          const file = await getFileById(id);
-          if (!file) return;
-
-          if (action === "play") {
-            playStoredFile(file);
-          } else if (action === "download") {
-            downloadStoredFile(file);
-          } else if (action === "delete") {
-            await deleteFileById(id);
-            loadFilesToUI();
-          }
-        } catch (err) {
-          console.error(err);
+      if (btn.dataset.act === "play") {
+        if (f.category === "audio") {
+          startMiniFromRecord(f);
+        } else {
+          openVideoFromRecord(f);
         }
-      });
-    }
-
-    function playStoredFile(file) {
-      const blob = file.data;
-      const url = URL.createObjectURL(blob);
-      if (file.category === "audio") {
-        audioOverlayTitle.textContent = file.title || "Music";
-        offlineAudio.src = url;
-        audioOverlay.classList.add("show");
-        offlineAudio.play().catch(() => {});
-        offlineAudio.onended = () => {
-          URL.revokeObjectURL(url);
-        };
-      } else {
-        videoOverlayTitle.textContent = file.title || "Video";
-        offlineVideo.src = url;
-        videoOverlay.classList.add("show");
-        offlineVideo.play().catch(() => {});
-        offlineVideo.onended = () => {
-          URL.revokeObjectURL(url);
-        };
+      } else if (btn.dataset.act === "save") {
+        const url = URL.createObjectURL(f.data);
+        const a=document.createElement("a");
+        a.href=url;
+        a.download=f.filename || (f.category==="audio"?"audio.mp3":"video.mp4");
+        document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+      } else if (btn.dataset.act === "del") {
+        await dbDel(id);
+        if(currentFile && currentFile.id===id) hideMini();
+        loadFilesUI();
       }
-    }
+    });
 
-    function downloadStoredFile(file) {
+    // ---- Mini player (audio) ----
+    function showMini(){
+      mini.classList.remove("hidden");
+      miniToggle.textContent = "⏸";
+      if(rafId) cancelAnimationFrame(rafId);
+      const loop=()=>{
+        if(audio.duration && isFinite(audio.duration)){
+          miniBar.style.width = ((audio.currentTime/audio.duration)*100|0)+"%";
+        }else miniBar.style.width="0%";
+        rafId = requestAnimationFrame(loop);
+      };
+      loop();
+    }
+    function hideMini(){
+      mini.classList.add("hidden");
+      miniBar.style.width="0%";
+      if(rafId) cancelAnimationFrame(rafId);
+      if(currentFile?.urlObject) URL.revokeObjectURL(currentFile.urlObject);
+      currentFile=null;
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    }
+    function startMiniFromRecord(file){
       const blob = file.data;
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download =
-        file.filename || (file.category === "audio" ? "audio.mp3" : "video.mp4");
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      if(currentFile?.urlObject) URL.revokeObjectURL(currentFile.urlObject);
+      currentFile = {id:file.id,title:file.title||file.filename,category:file.category,urlObject:url};
+      miniTitle.textContent = currentFile.title || (file.category==="audio"?"Music":"Video");
+      miniCover.textContent = file.category==="audio" ? "🎵" : "▶";
+      audio.src = url;
+      audio.play().catch(()=>{});
+      showMini();
+    }
+    mini.addEventListener("click",(e)=>{
+      const b=e.target.closest("[data-act]"); if(!b) return;
+      const act=b.dataset.act;
+      if(act==="toggle"){
+        if(audio.paused){audio.play();miniToggle.textContent="⏸";}else{audio.pause();miniToggle.textContent="▶";}
+      }else if(act==="back10"){audio.currentTime=Math.max(0,audio.currentTime-10);}
+      else if(act==="fwd10"){audio.currentTime=Math.min(audio.duration||audio.currentTime+10,audio.currentTime+10);}
+      else if(act==="close"){hideMini();}
+    });
+    audio.addEventListener("ended",()=>{miniToggle.textContent="▶";});
+
+    // ---- Video overlay ----
+    function openVideoFromRecord(file) {
+      // IndexedDB ထဲက data ကို safe Blob အနေဖြင့် ပြန်ပြင်
+      let blob;
+      if (file.data instanceof Blob) {
+        blob = file.data;
+      } else if (file.data && file.data.buffer) {
+        blob = new Blob([file.data.buffer], { type: file.mime || "video/mp4" });
+      } else {
+        blob = new Blob([file.data], { type: file.mime || "video/mp4" });
+      }
+
+      if (currentVideoUrl) {
+        URL.revokeObjectURL(currentVideoUrl);
+        currentVideoUrl = null;
+      }
+
+      const url = URL.createObjectURL(blob);
+      currentVideoUrl = url;
+
+      videoTitle.textContent = file.title || file.filename || "Video";
+      offlineVideo.src = url;
+      offlineVideo.load();
+      videoOverlay.classList.add("show");
+      offlineVideo.play().catch(()=>{});
     }
 
     function closeVideoOverlay() {
@@ -1115,187 +639,125 @@
       offlineVideo.pause();
       offlineVideo.removeAttribute("src");
       offlineVideo.load();
-    }
 
-    function closeAudioOverlay() {
-      audioOverlay.classList.remove("show");
-      offlineAudio.pause();
-      offlineAudio.removeAttribute("src");
-      offlineAudio.load();
-    }
-
-    // --- Main Download Logic ---
-    async function handleClick() {
-      const url = urlInput.value.trim();
-      if (!url) {
-        setStatus("Paste a link first.", true);
-        return;
+      if (currentVideoUrl) {
+        URL.revokeObjectURL(currentVideoUrl);
+        currentVideoUrl = null;
       }
+    }
+    window.closeVideoOverlay = closeVideoOverlay;
 
-      // Stage 1: fetch formats
-      if (!lastFormats.length || lastUrl !== url) {
-        try {
-          setStatus("Checking qualities…", false);
-          const formats = await fetchFormats(url);
+    // ---- Download flow (with custom name, no auto duplicate) ----
+    async function handleClick(){
+      const url = urlInput.value.trim();
+      if(!url){setStatus("Paste a link first.",true);return;}
+
+      if(!lastFormats.length || lastUrl!==url){
+        try{
+          setStatus("Checking qualities…");
+          const fs = await fetchFormats(url);
           lastUrl = url;
-          populateQualitySelect(formats);
-          setStatus("Choose Video / MP3 then tap Download again.", false);
-        } catch (e) {
+          populateFormats(fs);
+          setStatus("Choose Video / MP3 then tap Download again.");
+        }catch(e){
           console.error(e);
-          setStatus("Failed to analyze link. Check connection.", true);
+          setStatus("Failed to analyze link. Check connection.",true);
         }
         return;
       }
 
-      // Stage 2: download
-      const formatId = qualitySelect.value;
-      const fmt = lastFormats.find((f) => f.id === formatId) || {
-        category: "video",
-        label: "Video"
-      };
+      const fmtId = qualitySelect.value;
+      const fmt   = lastFormats.find(f=>f.id===fmtId) || {category:"video",label:"Video"};
       const category = fmt.category || "video";
 
-      try {
-        setStatus("Preparing download…", false);
-        resultEl.style.display = "none";
+      let customBase = prompt("Enter file name (without extension):", (fmt.label || "my-download").replace(/\W+/g," ").trim());
+      if(customBase) customBase = customBase.trim();
+      const ext = category==="audio" ? ".mp3" : ".mp4";
 
-        const reqUrl =
-          API_BASE +
-          "/download?url=" +
-          encodeURIComponent(url) +
-          "&format_id=" +
-          encodeURIComponent(formatId);
-        const res = await fetch(reqUrl);
-        if (!res.ok) throw new Error("Server error");
-        const data = await res.json();
-        const href = data.download_url.startsWith("http")
-          ? data.download_url
-          : API_BASE + data.download_url;
-        const filename =
-          data.filename ||
-          (category === "audio" ? "audio.mp3" : "video.mp4");
-        const title = data.title || fmt.label || filename;
+      try{
+        setStatus("Preparing download…");
+        resultEl.style.display="none";
+        const r = await fetch(`${API_BASE}/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(fmtId)}`);
+        if(!r.ok) throw new Error("server");
+        const data = await r.json();
+        const href = data.download_url.startsWith("http") ? data.download_url : API_BASE + data.download_url;
+        const serverFilename = data.filename || (category==="audio"?"audio.mp3":"video.mp4");
+        let filename = serverFilename;
+        if(customBase){
+          const safe = customBase.replace(/[\\/:*?"<>|]+/g,"-");
+          filename = safe.endsWith(ext) ? safe : (safe + ext);
+        }
+        const title = customBase || data.title || fmt.label || filename;
 
-        await startDownloadWithTask(href, filename, category, title);
+        await downloadWithTask(href, filename, category, title);
 
-        resultEl.style.display = "block";
-        resultEl.innerHTML =
-          '✅ Download completed. If it did not start, <a href="' +
-          href +
-          '" target="_blank" rel="noopener">tap here to download manually</a>.';
-      } catch (e) {
+        resultEl.style.display="block";
+        resultEl.textContent = '✅ Saved to "Files" tab. Tap Save there if you want to export file once.';
+      }catch(e){
         console.error(e);
-        setStatus(
-          "You can't download some special videos (photo + music) or network error.",
-          true
-        );
+        setStatus("You can't download special (photo+music) or network error.",true);
       }
     }
 
-    async function startDownloadWithTask(href, filename, category, title) {
-      const taskId = Date.now() + Math.random();
-      const task = {
-        id: taskId,
-        title: title,
-        filename: filename,
-        category: category,
-        progress: 0,
-        status: "Starting",
-        createdAt: Date.now()
-      };
-      addTask(task);
-
-      try {
+    async function downloadWithTask(href, filename, category, title){
+      const id = Date.now()+Math.random();
+      addTask({id,title,filename,category,progress:0,status:"Starting",createdAt:Date.now()});
+      try{
         const res = await fetch(href);
-        if (!res.ok) throw new Error("Network error");
+        if(!res.ok) throw new Error("net");
+        const total = Number(res.headers.get("Content-Length")||"0");
+        const type = category==="audio" ? "audio/mpeg" : "video/mp4";
+        const reader = res.body?.getReader ? res.body.getReader() : null;
 
-        const total = Number(res.headers.get("Content-Length") || "0");
-        const contentType =
-          res.headers.get("Content-Type") ||
-          (category === "audio" ? "audio/mpeg" : "video/mp4");
-
-        const reader = res.body && res.body.getReader ? res.body.getReader() : null;
-
-        if (!reader) {
-          // Fallback: let the browser download without offline save
-          const a = document.createElement("a");
-          a.href = href;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          updateTask(taskId, { progress: 100, status: "Completed (external)" });
-          setStatus("Download started in browser.", false);
+        if(!reader){
+          patchTask(id,{progress:100,status:"Completed (no offline)"});
+          setStatus("Download stream not supported in this browser.",true);
           return;
         }
 
-        const chunks = [];
-        let loaded = 0;
-        updateTask(taskId, { status: "Downloading" });
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          if (value) {
-            chunks.push(value);
-            loaded += value.length;
-            if (total) {
-              const pct = Math.round((loaded / total) * 100);
-              updateTask(taskId, { progress: pct });
-            }
-          }
+        const chunks=[];let loaded=0;patchTask(id,{status:"Downloading"});
+        while(true){
+          const {done,value} = await reader.read();
+          if(done) break;
+          chunks.push(value); loaded += value.length;
+          if(total) patchTask(id,{progress:Math.round(loaded/total*100)});
         }
 
-        const blob = new Blob(chunks, { type: contentType });
-        updateTask(taskId, { status: "Saving", progress: 100 });
+        const blob = new Blob(chunks,{type});
+        patchTask(id,{status:"Saving",progress:100});
 
-        // Save into IndexedDB for offline Files tab
-        try {
-          const record = {
-            createdAt: Date.now(),
-            title: title,
-            filename: filename,
-            size: blob.size,
-            category: category,
-            mime: contentType,
-            data: blob
-          };
-          await saveFileRecord(record);
-        } catch (e) {
-          console.warn("Failed to save to library", e);
+        let savedId=null;
+        try{
+          savedId = await dbAdd({createdAt:Date.now(),title,filename,size:blob.size,category,mime:type,data:blob});
+        }catch(e){console.warn("save fail",e);}
+
+        patchTask(id,{status:"Completed"});
+        setStatus("Download completed. Check Files tab.",false);
+        loadFilesUI();
+
+        if(category==="audio" && savedId!=null){
+          const rec = await dbGet(savedId);
+          if(rec) startMiniFromRecord(rec);
         }
-
-        // Trigger browser download
-        const objectUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = objectUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(objectUrl);
-
-        updateTask(taskId, { status: "Completed" });
-        setStatus("Download completed.", false);
-        loadFilesToUI();
-      } catch (err) {
-        console.error(err);
-        updateTask(taskId, { status: "Error", progress: 0 });
-        setStatus("Download failed. Check internet connection.", true);
+      }catch(e){
+        console.error(e);
+        patchTask(id,{status:"Error"});
+        setStatus("Download failed.",true);
       }
     }
 
     downloadBtn.addEventListener("click", handleClick);
-    urlInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") handleClick();
+    urlInput.addEventListener("keypress", e=>{ if(e.key==="Enter") handleClick(); });
+
+    window.addEventListener("load", ()=>{
+      activateTab("home");
+      loadFilesUI();
+      renderTasks();
     });
 
-    // --- Service Worker for offline shell (if you have sw.js) ---
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("./sw.js")
-          .catch((err) => console.warn("SW register failed", err));
+    if("serviceWorker" in navigator){
+      window.addEventListener("load", ()=>{
+        navigator.serviceWorker.register("./sw.js").catch(()=>{});
       });
     }
   </script>
