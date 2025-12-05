@@ -30,6 +30,7 @@ def root():
 
 
 # 1) Get formats
+# 1) Get formats
 @app.get("/formats")
 def get_formats(url: str):
     if not url:
@@ -48,7 +49,11 @@ def get_formats(url: str):
 
         fmts = []
         for f in info.get("formats", []):
+            # ---- အဓိက Fix အပိုင်း ----
+            # audio မပါတဲ့ video-only format တွေ skip လုပ်မယ်
             if f.get("vcodec") == "none":
+                continue
+            if f.get("acodec") == "none":
                 continue
             if f.get("ext") != "mp4":
                 continue
@@ -66,7 +71,11 @@ def get_formats(url: str):
                 "label": " ".join(label_parts) if label_parts else f.get("format_id")
             })
 
-        fmts.sort(key=lambda x: int(x["label"].split("p")[0]) if "p" in x["label"] else 0, reverse=True)
+        # Resolution အမြင့်ဆုံးက အပေါ်မှာ ပေါ်အောင် sort
+        fmts.sort(
+            key=lambda x: int(x["label"].split("p")[0]) if "p" in x["label"] else 0,
+            reverse=True
+        )
 
         return {"formats": fmts}
 
