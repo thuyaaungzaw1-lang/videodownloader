@@ -374,7 +374,7 @@ function detectService(u) {
     if (u.includes("tiktok")) return "TIKTOK";
     if (u.includes("facebook") || u.includes("fb.watch")) return "FACEBOOK";
     if (u.includes("youtube") || u.includes("youtu.be")) return "YOUTUBE";
-    return "UNKNOWN";
+    return "UNKNOWN ERROR";
 }
 
 urlInput.addEventListener("input", () => {
@@ -680,13 +680,13 @@ async function handleClick() {
     // FIRST CLICK → load formats
     if (!lastFormats.length || lastUrl !== url) {
         try {
-            setStatus("Fetching formats…");
+            setStatus("Checking quality…");
             const fs = await fetchFormats(url);
             lastUrl = url;
             populateFormats(fs);
             setStatus("Select quality & tap Download again.");
         } catch {
-            setStatus("Error loading formats.", true);
+            setStatus("Error loading quality.", true);
         }
         return;
     }
