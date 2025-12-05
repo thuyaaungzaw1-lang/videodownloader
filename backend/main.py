@@ -128,8 +128,7 @@ def _choose_best_format(info, quality_tag: str):
             return sorted(ok, key=lambda x: x.get("height") or 0, reverse=True)[0]
         if cands:
             return sorted(cands, key=lambda x: x.
-
-Y O U - K N O W - M E, [12/5/2025 1:47 PM]
+                          
 get("height") or 0, reverse=True)[0]
         return None
 
