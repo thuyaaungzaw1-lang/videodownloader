@@ -317,7 +317,7 @@
     <div class="overlay-title" id="video-title"></div>
     <video id="offline-video" controls playsinline webkit-playsinline></video>
   </div>
-  <script>
+ <script>
 const API_BASE = "https://videodownloader-production-0c88.up.railway.app";
 const SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio";
 
@@ -372,13 +372,23 @@ function setStatus(msg, err = false) {
   statusEl.classList.toggle("error", !!err);
 }
 
+function esc(s) {
+  return (s || "").replace(/[&<>\"']/g, m => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#039;"
+  }[m]));
+}
+
 function detectService(u) {
   if (!u) return "AUTO DETECT";
   u = u.toLowerCase();
-  if (u.includes("tiktok")) return "TIKTOK";
-  if (u.includes("facebook") || u.includes("fb.watch")) return "FACEBOOK";
-  if (u.includes("youtube") || u.includes("youtu.be")) return "YOUTUBE";
-  return "UNKNOWN";
+  if (u.includes("tiktok")) return "TikTok";
+  if (u.includes("facebook") || u.includes("fb.watch")) return "Facebook";
+  if (u.includes("youtube") || u.includes("youtu.be")) return "YouTube";
+  return "Unknown Error";
 }
 
 urlInput.addEventListener("input", () => {
@@ -470,8 +480,15 @@ function activateTab(tab) {
   if (tab === "files") loadFilesUI();
 }
 
-navItems.forEach(i => {
-  i.addEventListener("click", () => activateTab(i.dataset.tab));
+// Desktop + Phone both work
+navItems.forEach(item => {
+  item.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const tab = item.dataset.tab;
+    activateTab(tab);
+    requestAnimationFrame(() => updateNavPill(tab));
+  });
 });
 
 window.addEventListener("resize", () => {
@@ -498,7 +515,8 @@ async function fetchFormats(u) {
   const r = await fetch(`${API_BASE}/formats?url=${encodeURIComponent(u)}`);
   const txt = await r.text();
   try {
-    return JSON.parse(txt).formats || [];
+    const d = JSON.parse(txt);
+    return d.formats || [];
   } catch {
     return [];
   }
@@ -550,7 +568,6 @@ function startMiniFromRecord(file) {
   miniCover.textContent = "🎵";
   audio.src = url;
   audio.play().catch(() => {});
-
   showMini();
 }
 
@@ -600,6 +617,10 @@ mini.addEventListener("click", e => {
   } else if (act === "close") {
     hideMini();
   }
+});
+
+audio.addEventListener("ended", () => {
+  miniToggle.textContent = "▶";
 });
 
 // --------------------------------------------------
@@ -668,7 +689,7 @@ async function loadFilesUI() {
       return `
         <div class="file" data-id="${f.id}">
           <div class="fmain">
-            <div class="ftitle">${f.title || f.filename || "Untitled"}</div>
+            <div class="ftitle">${esc(f.title || f.filename || "Untitled")}</div>
             <div class="fmeta">${label} · ${mb} MB</div>
           </div>
           <div class="factions">
@@ -724,7 +745,7 @@ function renderTasks() {
     return `
       <div class="task">
         <div class="tasktop">
-          <div class="ttitle">${t.title || t.filename || "Download"}</div>
+          <div class="ttitle">${esc(t.title || t.filename || "Download")}</div>
           <div class="tmeta">${t.category === "audio" ? "MP3" : "Video"}</div>
         </div>
         <div class="tmeta">${t.status || "Queued"} · ${pct}%</div>
@@ -745,29 +766,35 @@ function patchTask(id, patch) {
 // --------------------------------------------------
 async function handleClick() {
   const url = urlInput.value.trim();
-  if (!url) return setStatus("Paste a video link first.", true);
+  if (!url) {
+    setStatus("Paste a video link first.", true);
+    return;
+  }
 
-  // first click → load formats
+  // first click => load formats
   if (!lastFormats.length || lastUrl !== url) {
     try {
-      setStatus("Fetching formats…");
+      setStatus("Checking quality…");
       const fs = await fetchFormats(url);
       lastUrl = url;
       populateFormats(fs);
       setStatus("Select quality & tap Download again.");
     } catch (e) {
       console.error(e);
-      setStatus("Can't load formats (network?).", true);
+      setStatus("Can't load quality (network?).", true);
     }
     return;
   }
 
-  // second click → download
+  // second click => download
   const fmtId = qualitySelect.value;
   const fmt = lastFormats.find(f => f.id === fmtId) || { category: "video", label: "Video" };
   const category = fmt.category || "video";
 
-  let customBase = prompt("Enter file name (without extension):", (fmt.label || "my-download").replace(/\W+/g, " ").trim());
+  let customBase = prompt(
+    "Enter file name (without extension):",
+    (fmt.label || "my-download").replace(/\W+/g, " ").trim()
+  );
   if (customBase) customBase = customBase.trim();
   const ext = category === "audio" ? ".mp3" : ".mp4";
 
@@ -789,7 +816,9 @@ async function handleClick() {
 
     if (!data.download_url) throw new Error("Server error");
 
-    const href = data.download_url.startsWith("http") ? data.download_url : API_BASE + data.download_url;
+    const href = data.download_url.startsWith("http")
+      ? data.download_url
+      : API_BASE + data.download_url;
 
     let filename = data.filename || (category === "audio" ? "audio.mp3" : "video.mp4");
     if (customBase) {
@@ -876,11 +905,12 @@ urlInput.addEventListener("keypress", e => {
 
 window.addEventListener("load", () => {
   activateTab("home");
+  updateNavPill("home"); // desktop nav fix
   loadFilesUI();
   renderTasks();
 });
 
-// Service worker (original style)
+// Service worker
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
