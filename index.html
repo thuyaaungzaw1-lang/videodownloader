@@ -333,12 +333,13 @@ const filesEl = document.getElementById("files-list");
 const filterChips = document.querySelectorAll(".fchip");
 
 const views = {
-    home: document.getElementById("view-home"),
-    tasks: document.getElementById("view-tasks"),
-    files: document.getElementById("view-files")
+  home: document.getElementById("view-home"),
+  tasks: document.getElementById("view-tasks"),
+  files: document.getElementById("view-files")
 };
 
-const navItems = document.querySelectorAll(".nav .item");
+const nav = document.getElementById("nav");
+const navItems = nav.querySelectorAll(".item");
 const navPill = document.getElementById("nav-pill");
 
 const mini = document.getElementById("mini");
@@ -363,455 +364,528 @@ let currentFile = null;
 let rafId = null;
 let currentVideoUrl = null;
 
+// --------------------------------------------------
+// Helpers
+// --------------------------------------------------
 function setStatus(msg, err = false) {
-    statusEl.textContent = msg;
-    statusEl.classList.toggle("error", !!err);
+  statusEl.textContent = msg;
+  statusEl.classList.toggle("error", !!err);
 }
 
 function detectService(u) {
-    if (!u) return "AUTO DETECT";
-    u = u.toLowerCase();
-    if (u.includes("tiktok")) return "TIKTOK";
-    if (u.includes("facebook") || u.includes("fb.watch")) return "FACEBOOK";
-    if (u.includes("youtube") || u.includes("youtu.be")) return "YOUTUBE";
-    return "UNKNOWN ERROR";
+  if (!u) return "AUTO DETECT";
+  u = u.toLowerCase();
+  if (u.includes("tiktok")) return "TIKTOK";
+  if (u.includes("facebook") || u.includes("fb.watch")) return "FACEBOOK";
+  if (u.includes("youtube") || u.includes("youtu.be")) return "YOUTUBE";
+  return "UNKNOWN";
 }
 
 urlInput.addEventListener("input", () => {
-    servicePill.textContent = detectService(urlInput.value.trim());
-    lastFormats = [];
-    lastUrl = "";
-    qualitySelect.style.display = "none";
-    qualitySelect.innerHTML = "";
-    resultEl.style.display = "none";
-    setStatus("Paste a link…");
+  servicePill.textContent = detectService(urlInput.value.trim());
+  lastFormats = [];
+  lastUrl = "";
+  qualitySelect.style.display = "none";
+  qualitySelect.innerHTML = "";
+  resultEl.style.display = "none";
+  setStatus("Paste a link…");
 });
 
-// ------------------------------------------
-// DB
-// ------------------------------------------
+// --------------------------------------------------
+// IndexedDB
+// --------------------------------------------------
 function openDB() {
-    if (db) return Promise.resolve(db);
-    return new Promise((resolve, reject) => {
-        const req = indexedDB.open("kaneki_downloader", 1);
-        req.onupgradeneeded = (e) => {
-            const d = e.target.result;
-            if (!d.objectStoreNames.contains("files")) {
-                const s = d.createObjectStore("files", { keyPath: "id", autoIncrement: true });
-                s.createIndex("by_category", "category", { unique: false });
-                s.createIndex("by_createdAt", "createdAt", { unique: false });
-            }
-        };
-        req.onsuccess = (e) => {
-            db = e.target.result;
-            resolve(db);
-        };
-        req.onerror = () => reject(req.error);
-    });
+  if (db) return Promise.resolve(db);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open("kaneki_downloader", 1);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains("files")) {
+        const s = d.createObjectStore("files", { keyPath: "id", autoIncrement: true });
+        s.createIndex("by_category", "category", { unique: false });
+        s.createIndex("by_createdAt", "createdAt", { unique: false });
+      }
+    };
+    req.onsuccess = (e) => {
+      db = e.target.result;
+      resolve(db);
+    };
+    req.onerror = () => reject(req.error);
+  });
 }
 
 async function dbAdd(rec) {
-    const d = await openDB();
-    return new Promise((res, rej) => {
-        const tx = d.transaction("files", "readwrite");
-        tx.objectStore("files").add(rec).onsuccess = (ev) => res(ev.target.result);
-        tx.onerror = () => rej(tx.error);
-    });
+  const d = await openDB();
+  return new Promise((res, rej) => {
+    const tx = d.transaction("files", "readwrite");
+    tx.objectStore("files").add(rec).onsuccess = (ev) => res(ev.target.result);
+    tx.onerror = () => rej(tx.error);
+  });
 }
 
 async function dbAll() {
-    const d = await openDB();
-    return new Promise((res, rej) => {
-        const tx = d.transaction("files", "readonly");
-        tx.objectStore("files").getAll().onsuccess = (ev) => res(ev.target.result || []);
-        tx.onerror = () => rej(tx.error);
-    });
+  const d = await openDB();
+  return new Promise((res, rej) => {
+    const tx = d.transaction("files", "readonly");
+    tx.objectStore("files").getAll().onsuccess = (ev) => res(ev.target.result || []);
+    tx.onerror = () => rej(tx.error);
+  });
 }
 
 async function dbGet(id) {
-    const d = await openDB();
-    return new Promise((res, rej) => {
-        const tx = d.transaction("files", "readonly");
-        tx.objectStore("files").get(id).onsuccess = (ev) => res(ev.target.result || null);
-        tx.onerror = () => rej(tx.error);
-    });
+  const d = await openDB();
+  return new Promise((res, rej) => {
+    const tx = d.transaction("files", "readonly");
+    tx.objectStore("files").get(id).onsuccess = (ev) => res(ev.target.result || null);
+    tx.onerror = () => rej(tx.error);
+  });
 }
 
 async function dbDel(id) {
-    const d = await openDB();
-    return new Promise((res, rej) => {
-        const tx = d.transaction("files", "readwrite");
-        tx.objectStore("files").delete(id).onsuccess = () => res();
-        tx.onerror = () => rej(tx.error);
-    });
+  const d = await openDB();
+  return new Promise((res, rej) => {
+    const tx = d.transaction("files", "readwrite");
+    tx.objectStore("files").delete(id).onsuccess = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
 }
 
-// ------------------------------------------
+// --------------------------------------------------
+// Nav + Tabs
+// --------------------------------------------------
+function updateNavPill(tab) {
+  const active = [...navItems].find(i => i.dataset.tab === tab);
+  if (!active) return;
+  const itemWidth = active.offsetWidth;
+  const pillWidth = itemWidth + 16;
+  const left = active.offsetLeft + (itemWidth - pillWidth) / 2;
+  navPill.style.width = pillWidth + "px";
+  navPill.style.left = left + "px";
+}
+
+function activateTab(tab) {
+  Object.keys(views).forEach(k => views[k].classList.toggle("active", k === tab));
+  navItems.forEach(i => i.classList.toggle("active", i.dataset.tab === tab));
+  updateNavPill(tab);
+  if (tab === "files") loadFilesUI();
+}
+
+navItems.forEach(i => {
+  i.addEventListener("click", () => activateTab(i.dataset.tab));
+});
+
+window.addEventListener("resize", () => {
+  const active = [...navItems].find(i => i.classList.contains("active"));
+  if (active) updateNavPill(active.dataset.tab);
+});
+
+// --------------------------------------------------
+// Filters (All / Video / Music)
+// --------------------------------------------------
+filterChips.forEach(c => {
+  c.addEventListener("click", () => {
+    filterChips.forEach(x => x.classList.remove("active"));
+    c.classList.add("active");
+    filesFilter = c.dataset.filter || "all";
+    loadFilesUI();
+  });
+});
+
+// --------------------------------------------------
 // Formats
-// ------------------------------------------
+// --------------------------------------------------
 async function fetchFormats(u) {
-    const r = await fetch(`${API_BASE}/formats?url=${encodeURIComponent(u)}`);
-    let txt = await r.text();
-    try {
-        return JSON.parse(txt).formats || [];
-    } catch {
-        return [];
-    }
+  const r = await fetch(`${API_BASE}/formats?url=${encodeURIComponent(u)}`);
+  const txt = await r.text();
+  try {
+    return JSON.parse(txt).formats || [];
+  } catch {
+    return [];
+  }
 }
 
-// Prettify SD/HD labels
 function prettyLabel(label) {
-    if (!label) return "MP4";
-    const l = label.toLowerCase();
-
-    if (l === "sd") return "480p";
-    if (l === "hd") return "720p";
-
-    if (l.startsWith("sd")) return "480p";
-    if (l.startsWith("hd")) return "720p";
-
-    return label;
+  if (!label) return "MP4";
+  const l = label.toLowerCase();
+  if (l === "sd" || l.startsWith("sd")) return "480p";
+  if (l === "hd" || l.startsWith("hd")) return "720p";
+  return label;
 }
 
 function populateFormats(fs) {
-    lastFormats = [
-        { id: SPECIAL_AUDIO_FORMAT, label: "🎵 MP3 / Audio only", category: "audio" }
-    ];
+  lastFormats = [
+    { id: SPECIAL_AUDIO_FORMAT, label: "🎵 MP3 / Audio only", category: "audio" }
+  ];
 
-    fs.forEach(f => {
-        lastFormats.push({
-            id: f.format_id,
-            label: prettyLabel(f.label),
-            category: "video"
-        });
+  fs.forEach(f => {
+    lastFormats.push({
+      id: f.format_id,
+      label: prettyLabel(f.label),
+      category: "video"
     });
+  });
 
-    qualitySelect.innerHTML = "";
-    lastFormats.forEach(f => {
-        const o = document.createElement("option");
-        o.value = f.id;
-        o.textContent = f.label;
-        o.dataset.category = f.category;
-        qualitySelect.appendChild(o);
-    });
+  qualitySelect.innerHTML = "";
+  lastFormats.forEach(f => {
+    const o = document.createElement("option");
+    o.value = f.id;
+    o.textContent = f.label;
+    o.dataset.category = f.category;
+    qualitySelect.appendChild(o);
+  });
 
-    qualitySelect.style.display = "block";
+  qualitySelect.style.display = "block";
 }
 
-// ------------------------------------------
-// VIDEO / AUDIO PLAYER (offline)
-// ------------------------------------------
+// --------------------------------------------------
+// Mini audio player
+// --------------------------------------------------
 function startMiniFromRecord(file) {
-    const blob = file.data;
-    const url = URL.createObjectURL(blob);
+  const blob = file.data;
+  const url = URL.createObjectURL(blob);
+  if (currentFile?.urlObject) URL.revokeObjectURL(currentFile.urlObject);
 
-    if (currentFile?.urlObject) URL.revokeObjectURL(currentFile.urlObject);
+  currentFile = { id: file.id, title: file.title, urlObject: url };
+  miniTitle.textContent = currentFile.title || "Audio";
+  miniCover.textContent = "🎵";
+  audio.src = url;
+  audio.play().catch(() => {});
 
-    currentFile = { id: file.id, title: file.title, urlObject: url };
-
-    miniTitle.textContent = currentFile.title || "Audio";
-    miniCover.textContent = "🎵";
-    audio.src = url;
-    audio.play().catch(() => {});
-
-    showMini();
+  showMini();
 }
 
 function showMini() {
-    mini.classList.remove("hidden");
-    miniToggle.textContent = "⏸";
+  mini.classList.remove("hidden");
+  miniToggle.textContent = "⏸";
+  if (rafId) cancelAnimationFrame(rafId);
 
-    if (rafId) cancelAnimationFrame(rafId);
-
-    const loop = () => {
-        if (audio.duration && isFinite(audio.duration)) {
-            miniBar.style.width = ((audio.currentTime / audio.duration) * 100) + "%";
-        } else {
-            miniBar.style.width = "0%";
-        }
-        rafId = requestAnimationFrame(loop);
-    };
-    loop();
+  const loop = () => {
+    if (audio.duration && isFinite(audio.duration)) {
+      miniBar.style.width = ((audio.currentTime / audio.duration) * 100) + "%";
+    } else {
+      miniBar.style.width = "0%";
+    }
+    rafId = requestAnimationFrame(loop);
+  };
+  loop();
 }
 
 function hideMini() {
-    mini.classList.add("hidden");
-    miniBar.style.width = "0%";
-    if (rafId) cancelAnimationFrame(rafId);
-
-    if (currentFile?.urlObject) URL.revokeObjectURL(currentFile.urlObject);
-    currentFile = null;
-
-    audio.pause();
-    audio.removeAttribute("src");
-    audio.load();
+  mini.classList.add("hidden");
+  miniBar.style.width = "0%";
+  if (rafId) cancelAnimationFrame(rafId);
+  if (currentFile?.urlObject) URL.revokeObjectURL(currentFile.urlObject);
+  currentFile = null;
+  audio.pause();
+  audio.removeAttribute("src");
+  audio.load();
 }
 
 mini.addEventListener("click", e => {
-    const b = e.target.closest("[data-act]");
-    if (!b) return;
-
-    if (b.dataset.act === "toggle") {
-        if (audio.paused) {
-            audio.play();
-            miniToggle.textContent = "⏸";
-        } else {
-            audio.pause();
-            miniToggle.textContent = "▶";
-        }
+  const b = e.target.closest("[data-act]");
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === "toggle") {
+    if (audio.paused) {
+      audio.play();
+      miniToggle.textContent = "⏸";
+    } else {
+      audio.pause();
+      miniToggle.textContent = "▶";
     }
-
-    if (b.dataset.act === "close") hideMini();
+  } else if (act === "back10") {
+    audio.currentTime = Math.max(0, audio.currentTime - 10);
+  } else if (act === "fwd10") {
+    audio.currentTime = Math.min(audio.duration || audio.currentTime + 10, audio.currentTime + 10);
+  } else if (act === "close") {
+    hideMini();
+  }
 });
 
-// ------------------------------------------
-// Video Overlay
-// ------------------------------------------
+// --------------------------------------------------
+// Video overlay
+// --------------------------------------------------
 function openVideoFromRecord(file) {
-    let blob;
+  let blob;
+  if (file.data instanceof Blob) {
+    blob = file.data;
+  } else if (file.data && file.data.buffer) {
+    blob = new Blob([file.data.buffer], { type: file.mime || "video/mp4" });
+  } else {
+    blob = new Blob([file.data], { type: file.mime || "video/mp4" });
+  }
 
-    if (file.data instanceof Blob) blob = file.data;
-    else blob = new Blob([file.data.buffer || file.data], { type: file.mime || "video/mp4" });
+  if (currentVideoUrl) {
+    URL.revokeObjectURL(currentVideoUrl);
+    currentVideoUrl = null;
+  }
 
-    if (currentVideoUrl) URL.revokeObjectURL(currentVideoUrl);
+  const url = URL.createObjectURL(blob);
+  currentVideoUrl = url;
 
-    const url = URL.createObjectURL(blob);
-    currentVideoUrl = url;
-
-    videoTitle.textContent = file.title || "Video";
-    offlineVideo.src = url;
-    offlineVideo.load();
-    videoOverlay.classList.add("show");
-
-    offlineVideo.play().catch(() => {});
+  videoTitle.textContent = file.title || file.filename || "Video";
+  offlineVideo.src = url;
+  offlineVideo.load();
+  videoOverlay.classList.add("show");
+  offlineVideo.play().catch(() => {});
 }
 
 function closeVideoOverlay() {
-    videoOverlay.classList.remove("show");
-    offlineVideo.pause();
-    offlineVideo.removeAttribute("src");
-    offlineVideo.load();
+  videoOverlay.classList.remove("show");
+  offlineVideo.pause();
+  offlineVideo.removeAttribute("src");
+  offlineVideo.load();
 
-    if (currentVideoUrl) {
-        URL.revokeObjectURL(currentVideoUrl);
-        currentVideoUrl = null;
-    }
+  if (currentVideoUrl) {
+    URL.revokeObjectURL(currentVideoUrl);
+    currentVideoUrl = null;
+  }
 }
-
 window.closeVideoOverlay = closeVideoOverlay;
 
-
-// ------------------------------------------
+// --------------------------------------------------
 // Files UI
-// ------------------------------------------
+// --------------------------------------------------
 async function loadFilesUI() {
+  try {
     const all = await dbAll();
-
     if (!all.length) {
-        filesEl.innerHTML = `<div class="empty">No saved files yet.</div>`;
-        return;
+      filesEl.innerHTML = '<div class="empty">No saved files yet.</div>';
+      return;
     }
 
-    const list = all.sort((a, b) => b.createdAt - a.createdAt);
+    const sorted = all.sort((a, b) => b.createdAt - a.createdAt);
+    const list = filesFilter === "all" ? sorted : sorted.filter(f => f.category === filesFilter);
+
+    if (!list.length) {
+      filesEl.innerHTML = '<div class="empty">No files in this category.</div>';
+      return;
+    }
 
     filesEl.innerHTML = list.map(f => {
-        const mb = f.size ? (f.size / (1024 * 1024)).toFixed(1) : "?";
-        const label = f.category === "audio" ? "Music" : "Video";
-
-        return `
-            <div class="file" data-id="${f.id}">
-                <div class="fmain">
-                    <div class="ftitle">${f.title}</div>
-                    <div class="fmeta">${label} · ${mb} MB</div>
-                </div>
-                <div class="factions">
-                    <button class="gbtn" data-act="play">Play</button>
-                    <button class="gbtn" data-act="save">Save</button>
-                    <button class="gbtn" data-act="del">✕</button>
-                </div>
-            </div>
-        `;
+      const mb = f.size ? (f.size / (1024 * 1024)).toFixed(1) : "?";
+      const label = f.category === "audio" ? "Music" : "Video";
+      return `
+        <div class="file" data-id="${f.id}">
+          <div class="fmain">
+            <div class="ftitle">${f.title || f.filename || "Untitled"}</div>
+            <div class="fmeta">${label} · ${mb} MB</div>
+          </div>
+          <div class="factions">
+            <button class="gbtn" data-act="play">Play</button>
+            <button class="gbtn" data-act="save">Save</button>
+            <button class="gbtn" data-act="del">✕</button>
+          </div>
+        </div>
+      `;
     }).join("");
+  } catch (e) {
+    console.error(e);
+    filesEl.innerHTML = '<div class="empty">Storage not available.</div>';
+  }
 }
 
-filesEl.addEventListener("click", async e => {
-    const btn = e.target.closest(".gbtn");
-    if (!btn) return;
+filesEl.addEventListener("click", async (e) => {
+  const btn = e.target.closest(".gbtn");
+  if (!btn) return;
+  const id = Number(btn.closest(".file").dataset.id);
+  const f = await dbGet(id);
+  if (!f) return;
 
-    const id = Number(btn.closest(".file").dataset.id);
-    const f = await dbGet(id);
-    if (!f) return;
-
-    if (btn.dataset.act === "play") {
-        if (f.category === "audio") startMiniFromRecord(f);
-        else openVideoFromRecord(f);
-    }
-    if (btn.dataset.act === "save") {
-        const url = URL.createObjectURL(f.data);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = f.filename || "file.mp4";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-    }
-    if (btn.dataset.act === "del") {
-        await dbDel(id);
-        loadFilesUI();
-    }
+  if (btn.dataset.act === "play") {
+    if (f.category === "audio") startMiniFromRecord(f);
+    else openVideoFromRecord(f);
+  } else if (btn.dataset.act === "save") {
+    const url = URL.createObjectURL(f.data);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = f.filename || (f.category === "audio" ? "audio.mp3" : "video.mp4");
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } else if (btn.dataset.act === "del") {
+    await dbDel(id);
+    if (currentFile && currentFile.id === id) hideMini();
+    loadFilesUI();
+  }
 });
 
-
-// ------------------------------------------
-// Tabs
-// ------------------------------------------
-function activateTab(tab) {
-    Object.keys(views).forEach(k => views[k].classList.toggle("active", k === tab));
-}
-
-// ------------------------------------------
-// Download Flow (SAFE + compatible with FFmpeg backend)
-// ------------------------------------------
-async function handleClick() {
-    const url = urlInput.value.trim();
-    if (!url) return setStatus("Paste a video link first.", true);
-
-    // FIRST CLICK → load formats
-    if (!lastFormats.length || lastUrl !== url) {
-        try {
-            setStatus("Checking quality…");
-            const fs = await fetchFormats(url);
-            lastUrl = url;
-            populateFormats(fs);
-            setStatus("Select quality & tap Download again.");
-        } catch {
-            setStatus("Error loading quality.", true);
-        }
-        return;
-    }
-
-    // SECOND CLICK → download
-    const fmtId = qualitySelect.value;
-    const fmt = lastFormats.find(f => f.id === fmtId);
-
-    let customBase = prompt("Enter file name (no extension):", fmt.label || "video");
-    if (customBase) customBase = customBase.trim().replace(/[\\/:*?"<>|]+/g, "-");
-    if (!customBase) customBase = fmt.label || "video";
-
-    const ext = fmt.category === "audio" ? ".mp3" : ".mp4";
-    const finalFilename = customBase + ext;
-
-    setStatus("Downloading…");
-
-    try {
-        const r = await fetch(
-            `${API_BASE}/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(fmtId)}`
-        );
-
-        const txt = await r.text();
-        let data;
-
-        try {
-            data = JSON.parse(txt);
-        } catch {
-            throw new Error("Invalid JSON from server");
-        }
-
-        if (!data.download_url) throw new Error("Backend error");
-
-        await downloadWithTask(API_BASE + data.download_url, finalFilename, fmt.category, customBase);
-
-        setStatus("Done! Saved to Files.");
-        resultEl.style.display = "block";
-        resultEl.textContent = "✔ File saved successfully.";
-
-    } catch (e) {
-        console.error(e);
-        setStatus("Download failed.", true);
-    }
-}
-
-async function downloadWithTask(href, filename, category, title) {
-    const id = Date.now() + Math.random();
-
-    tasks.push({ id, title, filename, category, progress: 0, status: "Starting", createdAt: Date.now() });
-    renderTasks();
-
-    const res = await fetch(href);
-    const reader = res.body.getReader();
-    const total = Number(res.headers.get("Content-Length") || "0");
-
-    const chunks = [];
-    let loaded = 0;
-
-    while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        chunks.push(value);
-        loaded += value.length;
-
-        if (total) {
-            const pct = Math.round((loaded / total) * 100);
-            patchTask(id, { progress: pct, status: "Downloading" });
-        }
-    }
-
-    const blob = new Blob(chunks, {
-        type: category === "audio" ? "audio/mpeg" : "video/mp4"
-    });
-
-    const savedId = await dbAdd({
-        createdAt: Date.now(),
-        title,
-        filename,
-        size: blob.size,
-        category,
-        mime: blob.type,
-        data: blob
-    });
-
-    patchTask(id, { progress: 100, status: "Completed" });
-    loadFilesUI();
-}
-
+// --------------------------------------------------
+// Tasks
+// --------------------------------------------------
 function renderTasks() {
-    if (!tasks.length) {
-        tasksEl.innerHTML = '<div class="empty">No downloads yet.</div>';
-        return;
-    }
-    tasksEl.innerHTML = tasks.map(t => `
-        <div class="task">
-            <div class="tasktop">
-                <div class="ttitle">${t.title}</div>
-                <div class="tmeta">${t.category === "audio" ? "MP3" : "Video"}</div>
-            </div>
-            <div class="tmeta">${t.status} · ${t.progress}%</div>
-            <div class="pbar"><div class="pin" style="width:${t.progress}%"></div></div>
+  if (!tasks.length) {
+    tasksEl.innerHTML = '<div class="empty">No downloads yet.</div>';
+    return;
+  }
+  tasksEl.innerHTML = tasks.slice().sort((a, b) => b.createdAt - a.createdAt).map(t => {
+    const pct = Math.max(0, Math.min(100, t.progress | 0));
+    return `
+      <div class="task">
+        <div class="tasktop">
+          <div class="ttitle">${t.title || t.filename || "Download"}</div>
+          <div class="tmeta">${t.category === "audio" ? "MP3" : "Video"}</div>
         </div>
-    `).join("");
+        <div class="tmeta">${t.status || "Queued"} · ${pct}%</div>
+        <div class="pbar"><div class="pin" style="width:${pct}%"></div></div>
+      </div>
+    `;
+  }).join("");
 }
 
 function patchTask(id, patch) {
-    const t = tasks.find(x => x.id === id);
-    if (t) Object.assign(t, patch);
-    renderTasks();
+  const t = tasks.find(x => x.id === id);
+  if (t) Object.assign(t, patch);
+  renderTasks();
 }
 
-// ------------------------------------------
-// BUTTON + ENTER
-// ------------------------------------------
+// --------------------------------------------------
+// Download flow
+// --------------------------------------------------
+async function handleClick() {
+  const url = urlInput.value.trim();
+  if (!url) return setStatus("Paste a video link first.", true);
+
+  // first click → load formats
+  if (!lastFormats.length || lastUrl !== url) {
+    try {
+      setStatus("Fetching formats…");
+      const fs = await fetchFormats(url);
+      lastUrl = url;
+      populateFormats(fs);
+      setStatus("Select quality & tap Download again.");
+    } catch (e) {
+      console.error(e);
+      setStatus("Can't load formats (network?).", true);
+    }
+    return;
+  }
+
+  // second click → download
+  const fmtId = qualitySelect.value;
+  const fmt = lastFormats.find(f => f.id === fmtId) || { category: "video", label: "Video" };
+  const category = fmt.category || "video";
+
+  let customBase = prompt("Enter file name (without extension):", (fmt.label || "my-download").replace(/\W+/g, " ").trim());
+  if (customBase) customBase = customBase.trim();
+  const ext = category === "audio" ? ".mp3" : ".mp4";
+
+  try {
+    setStatus("Preparing download…");
+    resultEl.style.display = "none";
+
+    const r = await fetch(
+      `${API_BASE}/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(fmtId)}`
+    );
+
+    const txt = await r.text();
+    let data;
+    try {
+      data = JSON.parse(txt);
+    } catch {
+      throw new Error("Invalid JSON from server");
+    }
+
+    if (!data.download_url) throw new Error("Server error");
+
+    const href = data.download_url.startsWith("http") ? data.download_url : API_BASE + data.download_url;
+
+    let filename = data.filename || (category === "audio" ? "audio.mp3" : "video.mp4");
+    if (customBase) {
+      const safe = customBase.replace(/[\\/:*?"<>|]+/g, "-");
+      filename = safe.endsWith(ext) ? safe : (safe + ext);
+    }
+    const title = customBase || fmt.label || filename;
+
+    await downloadWithTask(href, filename, category, title);
+
+    resultEl.style.display = "block";
+    resultEl.textContent = '✅ Saved to "Files" tab.';
+    setStatus("Download completed.", false);
+  } catch (e) {
+    console.error(e);
+    setStatus("Download failed (network or server).", true);
+  }
+}
+
+async function downloadWithTask(href, filename, category, title) {
+  const id = Date.now() + Math.random();
+  tasks.push({ id, title, filename, category, progress: 0, status: "Starting", createdAt: Date.now() });
+  renderTasks();
+
+  const res = await fetch(href);
+  if (!res.body || !res.body.getReader) {
+    patchTask(id, { status: "Completed (no streaming)", progress: 100 });
+    return;
+  }
+
+  const reader = res.body.getReader();
+  const total = Number(res.headers.get("Content-Length") || "0");
+  const chunks = [];
+  let loaded = 0;
+
+  patchTask(id, { status: "Downloading" });
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.length;
+    if (total) {
+      patchTask(id, { progress: Math.round(loaded / total * 100) });
+    }
+  }
+
+  const type = category === "audio" ? "audio/mpeg" : "video/mp4";
+  const blob = new Blob(chunks, { type });
+
+  patchTask(id, { status: "Saving", progress: 100 });
+
+  let savedId = null;
+  try {
+    savedId = await dbAdd({
+      createdAt: Date.now(),
+      title,
+      filename,
+      size: blob.size,
+      category,
+      mime: type,
+      data: blob
+    });
+  } catch (e) {
+    console.warn("save fail", e);
+  }
+
+  patchTask(id, { status: "Completed" });
+  loadFilesUI();
+
+  if (category === "audio" && savedId != null) {
+    const rec = await dbGet(savedId);
+    if (rec) startMiniFromRecord(rec);
+  }
+}
+
+// --------------------------------------------------
+// Events
+// --------------------------------------------------
 downloadBtn.addEventListener("click", handleClick);
-urlInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") handleClick();
+urlInput.addEventListener("keypress", e => {
+  if (e.key === "Enter") handleClick();
 });
 
 window.addEventListener("load", () => {
-    activateTab("home");
-    loadFilesUI();
-    renderTasks();
+  activateTab("home");
+  loadFilesUI();
+  renderTasks();
 });
+
+// Service worker (original style)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
 </script>
   </body>
 </html>
