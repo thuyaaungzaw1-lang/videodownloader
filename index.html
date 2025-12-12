@@ -237,10 +237,10 @@
       <!-- HOME -->
       <section id="view-home" class="view active">
         <h1>Video & MP3 Downloader</h1>
-        <p class="sub">Paste a <b>TikTok</b>, <b>Facebook</b> or <b>YouTube</b> link. Choose <b>Video</b> or <b>MP3</b> and download directly.</p>
+        <p class="sub">Paste a <b>TikTok</b>, <b>Facebook</b> or <b>YouTube</b> or <b> Instagram </b> link. Choose <b>Video</b> or <b>MP3</b> and download directly.</p>
 
         <div class="chips">
-          <span class="chip"><span class="sm-dot"></span>TikTok / Facebook / YouTube</span>
+          <span class="chip"><span class="sm-dot"></span>TikTok / Facebook / YouTube / Instagram</span>
           <span class="chip"><span class="sm-dot"></span>MP4 + MP3 (audio only)</span>
           <span class="chip"><span class="sm-dot"></span>Offline library in Files</span>
           <span class="chip"><span class="sm-dot"></span>Not allowed photo+music</span>
@@ -248,7 +248,7 @@
 
         <label for="url">Video URL</label>
         <div class="inwrap">
-          <input id="url" type="url" placeholder="Paste a TikTok, Facebook or YouTube link…" autocomplete="off">
+          <input id="url" type="url" placeholder="Paste a TikTok, Facebook ,YouTube link or Instagram…" autocomplete="off">
           <span id="service-pill" class="pill">AUTO DETECT</span>
         </div>
 
@@ -388,6 +388,7 @@ function detectService(u) {
   if (u.includes("tiktok")) return "TikTok";
   if (u.includes("facebook") || u.includes("fb.watch")) return "Facebook";
   if (u.includes("youtube") || u.includes("youtu.be")) return "YouTube";
+  if (u.includes("instagram") || u.includes("instagram")) return "Instagram";
   return "Unknown Error";
 }
 
