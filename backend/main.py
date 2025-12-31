@@ -1,15 +1,30 @@
 import os
 import uuid
-
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import yt_dlp
 
 app = FastAPI()
 
-# CORS
+# ------------------------------------------------------------
+# CONFIGURATION
+# ------------------------------------------------------------
+# VPS ပေါ်မှာ Path မမှားအောင် လက်ရှိဖိုင်ရှိတဲ့နေရာကို အခြေခံပြီး ယူမယ်
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "downloads")
+
+# Download folder မရှိရင် ဆောက်မယ်
+if not os.path.exists(DOWNLOAD_DIR):
+    os.makedirs(DOWNLOAD_DIR)
+
+# Frontend က MP3 only လို့ပို့ရင် Backend ကသိဖို့
+SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio"
+
+# ------------------------------------------------------------
+# CORS (Domain အားလုံးကို လက်ခံပေးထားပါတယ်)
+# ------------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,33 +33,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DOWNLOAD_DIR = "downloads"
-os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-
-app.mount("/files", StaticFiles(directory=DOWNLOAD_DIR), name="files")
-
-# frontend မှာသုံးထားတဲ့ audio-only format id နဲ့ကိုက်စေဖို့
-SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio"
-
-
 @app.get("/")
 def root():
     return {
         "status": "ok",
-        "message": "ThuYaAungZaw Downloader (YouTube H264 1080/720/360 + TikTok selectable)",
+        "message": "Video Downloader is Running on VPS",
     }
 
-
 # ------------------------------------------------------------
-# FORMATS – frontend resolution dropdown ပဲ (UI)
+# FORMATS API
 # ------------------------------------------------------------
 @app.get("/formats")
 def get_formats(url: str):
     if not url:
         raise HTTPException(status_code=400, detail="URL is required")
 
-    # UI အတွက် 720p / 480p / 360p ပြမယ်
-    # TikTok မှာတော့ q720 ရွေးရင် backend က 1080p ထိလည်း အမြင့်ဆုံးကိုယူပေးမယ်
+    # UI အတွက် Format များ
     formats = [
         {"format_id": "q720", "label": "720p"},
         {"format_id": "q480", "label": "480p"},
@@ -54,11 +58,12 @@ def get_formats(url: str):
 
 
 # ------------------------------------------------------------
-# INTERNAL HELPERS
+# INTERNAL HELPERS (Download Logic)
 # ------------------------------------------------------------
 def download_audio_only(url: str) -> str:
-    """Audio only – MP3 / M4A (Frontend က MP3 / Audio only)."""
+    """Audio only – MP3 / M4A"""
     uid = str(uuid.uuid4())
+    # Absolute path ကိုသုံးထားပါတယ်
     out_tmpl = os.path.join(DOWNLOAD_DIR, uid + ".%(ext)s")
 
     ydl_opts = {
@@ -77,110 +82,68 @@ def download_audio_only(url: str) -> str:
 
 
 def _choose_best_format(info, quality_tag: str):
-    """
-    info = yt-dlp extract_info(..., download=False)
-    quality_tag = 'q720' / 'q480' / 'q360'
-
-    - TikTok: no-watermark mp4 သာရွေးပြီး,
-              q720 အတွက် height <= 1080 ထဲက အမြင့်ဆုံး format ကိုယူမယ်
-              q480/q360 အတွက်တော့ quality နည်းတဲ့ resolution ကိုရှာပေးပို့မယ်
-    - YouTube: format 37 / 22 / 18 ကိုသီးသန့် handle လုပ်မယ်
-    - အခြား site တွေ: preferred_max = 720/480/360 နဲ့ generic progressive mp4 ရွေးမယ်
-    """
     extractor = (info.get("extractor") or "").lower()
     formats = info.get("formats", []) or []
 
-    # ---------------------------------------------------------
-    # 1) TIKTOK – no watermark + 1080p support
-    # ---------------------------------------------------------
+    # --- 1) TIKTOK ---
     if "tiktok" in extractor:
-        # watermark မပါတဲ့ mp4 formats only
         clean = [
-            f
-            for f in formats
-            if (f.get("ext") == "mp4")
-            and not ("watermark" in (f.get("format_note") or "").lower())
+            f for f in formats
+            if (f.get("ext") == "mp4") and not ("watermark" in (f.get("format_note") or "").lower())
         ]
-
-        # watermark detection မအောင်မြင်ရင် mp4 အားလုံးကို fallback
         if not clean:
             clean = [f for f in formats if f.get("ext") == "mp4"]
 
-        # frontend dropdown logic
         if quality_tag == "q720":
-            preferred_max = 1080   # ⭐ q720 ရွေးထားသော်လည်း 1080p ထိ allow
+            preferred_max = 1080 
         elif quality_tag == "q480":
             preferred_max = 480
         else:
             preferred_max = 360
 
         ok = [f for f in clean if (f.get("height") or 0) <= preferred_max]
-
         if ok:
-            # preferred_max အောက်ကထဲက အမြင့်ဆုံး
             return sorted(ok, key=lambda x: x.get("height") or 0, reverse=True)[0]
-
-        # ≤ preferred_max မရှိရင်တော့
+        
         if clean:
             if quality_tag == "q720":
-                # high quality လိုရင် အမြင့်ဆုံးကိုပေးမယ်
                 return sorted(clean, key=lambda x: x.get("height") or 0, reverse=True)[0]
             else:
-                # low quality (q480/q360) တွေမှာတော့ ရနိုင်သမျှထဲက
-                # အနိမ့်ဆုံး height ကိုရွေးမယ် (file size လျော့အောင်)
                 return sorted(clean, key=lambda x: x.get("height") or 0)[0]
-
         return None
 
-    # ---------------------------------------------------------
-    # 2) YOUTUBE – 1080/720/360 H.264 progressive ကိုသီးသန့်ရွေးမယ်
-    # ---------------------------------------------------------
+    # --- 2) YOUTUBE ---
     def find_by_id(fid):
         return next((f for f in formats if f.get("format_id") == fid), None)
 
     if "youtube" in extractor:
-        # 37 = 1080p H.264 + audio
-        # 22 = 720p H.264 + audio
-        # 18 = 360p H.264 + audio
         if quality_tag == "q720":
             for fid in ["37", "22", "18"]:
                 f = find_by_id(fid)
-                if f:
-                    return f
+                if f: return f
         elif quality_tag == "q480":
-            # 480p အတွက်လည်း 22/18 ထဲက သင့်တော်မဲ့ကို fallback
             for fid in ["22", "18"]:
                 f = find_by_id(fid)
-                if f:
-                    return f
-        else:  # q360
+                if f: return f
+        else:
             for fid in ["18", "22", "37"]:
                 f = find_by_id(fid)
-                if f:
-                    return f
-        # မတွေ့ရင် အောက်က generic logic ဆင်းမယ်
+                if f: return f
 
-    # ---------------------------------------------------------
-    # 3) GENERIC SITES – fallback logic
-    # ---------------------------------------------------------
-    if quality_tag == "q720":
-        preferred_max = 720
-    elif quality_tag == "q480":
-        preferred_max = 480
-    else:
-        preferred_max = 360
+    # --- 3) GENERIC SITES ---
+    if quality_tag == "q720": preferred_max = 720
+    elif quality_tag == "q480": preferred_max = 480
+    else: preferred_max = 360
 
     prog = [
-        f
-        for f in formats
+        f for f in formats
         if (f.get("vcodec") or "").lower() != "none"
         and (f.get("acodec") or "").lower() != "none"
         and (f.get("ext") or "").lower() == "mp4"
     ]
 
     h264 = [
-        f
-        for f in prog
+        f for f in prog
         if (f.get("vcodec") or "").lower().startswith("avc1")
         or "h264" in (f.get("vcodec") or "").lower()
     ]
@@ -194,27 +157,17 @@ def _choose_best_format(info, quality_tag: str):
         return None
 
     f = best_under(h264, preferred_max)
-    if f:
-        return f
-
-    f = best_under(prog, preferred_max)
-    return f
+    if f: return f
+    return best_under(prog, preferred_max)
 
 
 def download_video_stable(url: str, quality_tag: str) -> str:
-    """
-    URL + quality_tag(q720/q480/q360) ထဲကနေ
-    iPhone/Safari playable ဖြစ်မယ့် progressive mp4 format ကိုရွေးပြီး download လုပ်မယ်။
-    - TikTok URL + q720 ဖြစ်ရင် 1080p ထိရှာပေးမယ် (no-watermark mp4 only)
-    """
-
     base_opts = {
         "quiet": True,
         "noplaylist": True,
         "nocheckcertificate": True,
     }
 
-    # 1) Info only – format table ရယူမယ်
     with yt_dlp.YoutubeDL({**base_opts, "skip_download": True}) as ydl:
         info = ydl.extract_info(url, download=False)
 
@@ -223,9 +176,9 @@ def download_video_stable(url: str, quality_tag: str) -> str:
         raise RuntimeError("No suitable progressive MP4 format found")
 
     fmt_id = chosen.get("format_id")
+    # Absolute path သုံးထားသည်
     out_tmpl = os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s")
 
-    # 2) actual download
     ydl_opts = {
         **base_opts,
         "format": fmt_id,
@@ -240,7 +193,7 @@ def download_video_stable(url: str, quality_tag: str) -> str:
 
 
 # ------------------------------------------------------------
-# DOWNLOAD ENDPOINT
+# DOWNLOAD API
 # ------------------------------------------------------------
 @app.get("/download")
 def download(url: str, format_id: str):
@@ -251,7 +204,6 @@ def download(url: str, format_id: str):
         if format_id == SPECIAL_AUDIO_FORMAT:
             filename = download_audio_only(url)
         else:
-            # format_id = q720 / q480 / q360
             filename = download_video_stable(url, format_id)
 
         return {
@@ -259,11 +211,12 @@ def download(url: str, format_id: str):
             "filename": filename,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Download error: {e}")
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Download error: {str(e)}")
 
 
 # ------------------------------------------------------------
-# SERVE FILE
+# SERVE FILE API
 # ------------------------------------------------------------
 @app.get("/file/{filename}")
 def get_file(filename: str):
@@ -272,9 +225,10 @@ def get_file(filename: str):
         raise HTTPException(status_code=404, detail="File not found")
 
     lower = filename.lower()
-    if lower.endswith(".mp3") or lower.endswith(".m4a") or lower.endswith(".aac"):
-        media_type = "audio/mpeg"
-    else:
-        media_type = "video/mp4"
+    media_type = "audio/mpeg" if lower.endswith((".mp3", ".m4a", ".aac")) else "video/mp4"
 
     return FileResponse(path, media_type=media_type, filename=filename)
+
+# python main.py နဲ့ Run ရင် အလုပ်လုပ်အောင် ထည့်ပေးထားသည်
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
