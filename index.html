@@ -5,8 +5,7 @@
   <title>Video & MP3 Downloader – ThuYaAungZaw</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- PWA Meta -->
-  <meta name="application-name" content="Kaneki Downloader">
+  <meta name="application-name" content="Video & MP3 Downloader – ThuYaAungZaw">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="KanekiDL">
@@ -234,7 +233,6 @@
     <div class="card">
       <div class="badge"><span class="dot"></span><strong>THUYAAUNGZAW</strong></div>
 
-      <!-- HOME -->
       <section id="view-home" class="view active">
         <h1>Video & MP3 Downloader</h1>
         <p class="sub">Paste a <b>TikTok</b>, <b>Facebook</b>, <b>YouTube</b> or <b> Instagram </b> link. Choose <b>Video</b> or <b>MP3</b> and download directly.</p>
@@ -243,7 +241,6 @@
           <span class="chip"><span class="sm-dot"></span>TikTok / Facebook / YouTube / Instagram</span>
           <span class="chip"><span class="sm-dot"></span>MP4 + MP3 (audio only)</span>
           <span class="chip"><span class="sm-dot"></span>Offline library in Files</span>
-          <span class="chip"><span class="sm-dot"></span>Not allowed photo+music</span>
         </div>
 
         <label for="url">Video URL</label>
@@ -265,14 +262,12 @@
         </div>
       </section>
 
-      <!-- TASKS -->
       <section id="view-tasks" class="view">
         <h1>Tasks</h1>
         <p class="sub">Active downloads and recent history.</p>
         <div id="tasks-list" class="tasks"></div>
       </section>
 
-      <!-- FILES -->
       <section id="view-files" class="view">
         <h1>Files (Offline)</h1>
         <p class="sub">Finished downloads live here. Works even when you’re offline.</p>
@@ -288,7 +283,6 @@
     </div>
   </div>
 
-  <!-- MINI AUDIO PLAYER -->
   <div id="mini" class="mini hidden" aria-live="polite">
     <div class="cover" id="mini-cover">🎵</div>
     <div class="mcol">
@@ -303,7 +297,6 @@
     </div>
   </div>
 
-  <!-- NAV -->
   <nav class="nav" id="nav">
     <div class="pill" id="nav-pill"></div>
     <div class="item active" data-tab="home"><span class="ico">🏠</span><span>Home</span></div>
@@ -311,13 +304,13 @@
     <div class="item" data-tab="files"><span class="ico">📂</span><span>Files</span></div>
   </nav>
 
-  <!-- VIDEO OVERLAY -->
   <div id="video-overlay" class="overlay">
     <button class="overlay-close" type="button" onclick="closeVideoOverlay()">✕</button>
     <div class="overlay-title" id="video-title"></div>
     <video id="offline-video" controls playsinline webkit-playsinline></video>
   </div>
  <script>
+// IMPORTANT: This must match your VPS Domain or IP
 const API_BASE ="https://thuyaaungzaw.carder.cloud";
 const SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio";
 
@@ -513,6 +506,7 @@ filterChips.forEach(c => {
 // Formats
 // --------------------------------------------------
 async function fetchFormats(u) {
+  // Use API_BASE constant
   const r = await fetch(API_BASE + "/formats?url=" + encodeURIComponent(u));
 
   const txt = await r.text();
@@ -818,6 +812,7 @@ async function handleClick() {
 
     if (!data.download_url) throw new Error("Server error");
 
+    // Fix: Ensure we use the correct API base if the returned URL is relative
     const href = data.download_url.startsWith("http")
       ? data.download_url
       : API_BASE + data.download_url;
@@ -921,5 +916,3 @@ if ("serviceWorker" in navigator) {
 </script>
   </body>
 </html>
-
-    
