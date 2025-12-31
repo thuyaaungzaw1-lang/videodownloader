@@ -513,7 +513,8 @@ filterChips.forEach(c => {
 // Formats
 // --------------------------------------------------
 async function fetchFormats(u) {
-  const r = await fetch(`${API_BASE}/formats?url=${encodeURIComponent(u)}`);
+  const r = await fetch(API_BASE + "/formats?url=" + encodeURIComponent(u));
+
   const txt = await r.text();
   try {
     const d = JSON.parse(txt);
