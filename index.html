@@ -2,18 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Video & MP3 Downloader – ThuYaAungZaw</title>
+  <title>Service Moved – ThuYaAungZaw</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <meta name="application-name" content="Video & MP3 Downloader – ThuYaAungZaw">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="KanekiDL">
   <meta name="theme-color" content="#0b0000">
-
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
   <style>
     :root {
@@ -23,7 +14,6 @@
       --text: #fbeaea;
       --muted: #b89494;
       --danger: #ff6b6b;
-      --nav-h: 64px;
     }
 
     *{box-sizing:border-box;margin:0;padding:0}
@@ -36,8 +26,7 @@
         url('https://wallpapers.com/images/featured-full/kaneki-xsv5e4ut8mxmqae9.jpg') center/cover fixed;
       display:flex;align-items:center;justify-content:center;
       padding:20px;
-      padding-bottom:calc(var(--nav-h) + 90px);
-      overflow-x:hidden;
+      overflow:hidden;
       position:relative;
     }
     body::before{
@@ -49,16 +38,17 @@
     }
     .scanline{position:fixed;inset:0;background-image:linear-gradient(to bottom,rgba(255,0,0,.15)0,transparent 2px);background-size:100% 4px;opacity:.12;pointer-events:none}
 
-    .wrapper{max-width:560px;width:100%;z-index:1}
+    .wrapper{max-width:480px;width:100%;z-index:1}
     .card{
       position:relative;overflow:hidden;
       background:radial-gradient(120% 120% at 0% 0%,rgba(40,0,0,.96),rgba(0,0,0,.98));
-      border-radius:24px;
-      padding:22px 20px 18px;
+      border-radius:28px;
+      padding:40px 24px;
       box-shadow:0 24px 60px rgba(0,0,0,.96), 0 0 18px rgba(255,46,46,.35);
       border:1px solid rgba(255,46,46,.35);
       backdrop-filter:blur(22px);
       -webkit-backdrop-filter:blur(22px);
+      text-align: center;
     }
 
     .badge{
@@ -67,163 +57,51 @@
       font-size:11px;letter-spacing:.08em;text-transform:uppercase;
       color:var(--muted);background:rgba(0,0,0,.7);
       border:1px solid rgba(255,46,46,.6);
+      margin-bottom: 20px;
     }
     .dot{
       width:8px;height:8px;border-radius:999px;
       background:var(--accent);
-      box-shadow:0 0 10px rgba(255,46,46,.9),0 0 18px rgba(255,46,46,.7);
+      box-shadow:0 0 10px rgba(255,46,46,.9);
       animation:ping 1.8s infinite;
     }
     @keyframes ping{
       0%{transform:scale(1);opacity:1}
       60%{transform:scale(1.8);opacity:0}
-      100%{transform:scale(1.8);opacity:0}
     }
 
-    h1{font-size:23px;margin:14px 0 8px;background:linear-gradient(90deg,#ff6b6b,#fff,#ff2e2e);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px}
-
-    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-    .chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,46,46,.45);background:rgba(0,0,0,.8);color:var(--muted)}
-    .sm-dot{width:6px;height:6px;border-radius:999px;background:var(--accent);box-shadow:0 0 8px rgba(255,46,46,.7)}
-
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    .inwrap{position:relative;margin-bottom:10px}
-    input[type="url"]{
-      width:100%;padding:11px 96px 11px 12px;border-radius:14px;
-      border:1px solid rgba(255,46,46,.7);
-      background:radial-gradient(110% 110% at 0% 0%, rgba(20,0,0,.9), rgba(0,0,0,.98));
-      color:var(--text);font-size:14px;outline:none;
-    }
-    input::placeholder{color:#8b6b6b;font-size:13px}
-    input:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(255,46,46,.5),0 0 20px rgba(255,46,46,.7);transform:translateY(-1px)}
-
-    .pill{
-      position:absolute;top:50%;right:8px;transform:translateY(-50%);
-      font-size:10px;padding:4px 8px;border-radius:999px;
-      background:rgba(0,0,0,.9);color:var(--accent);
-      border:1px solid rgba(255,46,46,.7);letter-spacing:.08em;text-transform:uppercase;
+    h1{font-size:26px;margin-bottom:16px;background:linear-gradient(90deg,#ff6b6b,#fff,#ff2e2e);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    
+    .notice-box {
+        background: rgba(255, 46, 46, 0.1);
+        border: 1px dashed rgba(255, 46, 46, 0.4);
+        padding: 15px;
+        border-radius: 16px;
+        margin-bottom: 24px;
     }
 
-    #quality{
-      width:100%;margin-top:8px;padding:9px 10px;border-radius:12px;
-      border:1px solid rgba(255,46,46,.7);
-      background:rgba(0,0,0,.95);color:var(--text);font-size:13px;display:none;
-    }
+    .sub{font-size:15px;color:var(--text);line-height:1.6;margin-bottom:20px}
+    .bot-id { color: var(--accent); font-weight: bold; display: block; margin-top: 8px; font-size: 16px; }
 
     .btn{
-      width:100%;margin-top:10px;border:0;border-radius:14px;
-      padding:11px 14px;font-size:14px;font-weight:500;
-      cursor:pointer;color:#fff;
+      width:100%;border:0;border-radius:16px;
+      padding:16px 20px;font-size:16px;font-weight:600;
+      cursor:pointer;color:#fff;text-decoration: none;
       background:
         radial-gradient(circle at 0% 0%, #ff6b6b, #ff2e2e),
         linear-gradient(90deg, #8b0000,#ff2e2e,#ff6b6b);
-      box-shadow:0 0 18px rgba(255,46,46,.8),0 16px 45px rgba(0,0,0,.95);
-      display:flex;align-items:center;justify-content:center;gap:8px;
+      box-shadow:0 0 20px rgba(255,46,46,0.5);
+      display:flex;align-items:center;justify-content:center;gap:12px;
+      transition: transform 0.2s;
     }
-
-    .status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px}
-    .status.error{color:var(--danger)}
-    .result{display:none;margin-top:10px;padding:9px 11px;border-radius:12px;border:1px dashed rgba(255,46,46,.7);background:rgba(0,0,0,.96);font-size:13px}
-    .result a{color:var(--accent)}
+    .btn:hover { transform: scale(1.02); }
+    .btn:active { transform: scale(0.98); }
 
     .footer{
-      margin-top:14px;
-      display:flex;justify-content:space-between;align-items:center;gap:8px;
-      font-size:11px;color:var(--muted);flex-wrap:wrap;
+      margin-top:24px;
+      font-size:12px;color:var(--muted);
     }
     .footer a{color:var(--accent);text-decoration:none;font-weight:500}
-    .footer a:hover{text-decoration:underline}
-
-    .view{display:none;animation:fade .25s}
-    .view.active{display:block}
-    @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-
-    .tasks{margin-top:6px;max-height:260px;overflow-y:auto;padding-right:4px}
-    .task{padding:8px 10px;margin-bottom:8px;border-radius:12px;background:rgba(0,0,0,.9);border:1px solid rgba(255,46,46,.3);font-size:12px}
-    .tasktop{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}
-    .ttitle{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .tmeta{font-size:11px;color:var(--muted)}
-    .pbar{width:100%;height:5px;border-radius:999px;background:rgba(255,46,46,.18);overflow:hidden;margin-top:4px}
-    .pin{height:100%;width:0;background:linear-gradient(90deg,#ff6b6b,#ff2e2e)}
-
-    .filters{display:flex;gap:6px;margin:4px 0 8px;flex-wrap:wrap}
-    .fchip{border-radius:999px;border:1px solid rgba(255,46,46,.5);background:rgba(0,0,0,.9);color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer}
-    .fchip.active{background:rgba(255,46,46,.16);color:var(--text)}
-    .files{margin-top:6px;max-height:260px;overflow-y:auto;padding-right:4px}
-    .file{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;margin-bottom:8px;border-radius:12px;background:rgba(0,0,0,.9);border:1px solid rgba(255,46,46,.3);font-size:12px}
-    .fmain{flex:1;min-width:0}
-    .ftitle{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .fmeta{font-size:11px;color:var(--muted)}
-    .factions{display:flex;gap:6px}
-    .gbtn{padding:5px 8px;border-radius:999px;border:1px solid rgba(255,46,46,.5);background:transparent;color:var(--text);font-size:11px;cursor:pointer}
-    .empty{font-size:12px;color:var(--muted);text-align:center;padding:20px 4px}
-
-    .mini{
-      position:fixed;left:50%;transform:translateX(-50%);
-      bottom:calc(var(--nav-h) + 14px);
-      width:min(580px,92%);
-      border-radius:20px;
-      padding:10px 12px;
-      display:flex;align-items:center;gap:10px;
-      background:linear-gradient(180deg, rgba(255,46,46,.18), rgba(0,0,0,.6));
-      border:1px solid rgba(255,46,46,.4);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 28px rgba(0,0,0,.55),0 0 30px rgba(255,46,46,.25);
-      backdrop-filter:blur(24px) saturate(1.2);
-      -webkit-backdrop-filter:blur(24px) saturate(1.2);
-      z-index:60;
-      transition:opacity .25s ease, transform .25s ease;
-    }
-    .mini.hidden{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(8px)}
-    .mini .cover{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(0,0,0,.7);border:1px solid rgba(255,46,46,.45)}
-    .mini .mcol{flex:1;min-width:0}
-    .mini .title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .mini .bar{width:100%;height:6px;border-radius:999px;background:rgba(255,46,46,.18);overflow:hidden;margin-top:5px}
-    .mini .barin{height:100%;width:0;background:linear-gradient(90deg,#ff6b6b,#ff2e2e)}
-    .mini .actions{display:flex;gap:6px;align-items:center}
-    .mini .icon{width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,46,46,.4);background:rgba(0,0,0,.7);display:grid;place-items:center;cursor:pointer}
-
-    .nav{
-      position:fixed;left:50%;transform:translateX(-50%);
-      bottom:16px;height:var(--nav-h);
-      width:min(520px,92%);
-      border-radius:26px;
-      background:linear-gradient(180deg, rgba(15,0,0,.9), rgba(5,0,0,.96));
-      border:1px solid rgba(255,46,46,.4);
-      display:flex;align-items:center;justify-content:space-around;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 12px 48px rgba(0,0,0,.7),0 0 30px rgba(255,46,46,.18);
-      backdrop-filter:blur(26px) saturate(1.2);
-      -webkit-backdrop-filter:blur(26px) saturate(1.2);
-      z-index:50;overflow:hidden;
-    }
-    .nav .pill{
-      position:absolute;
-      top:50%;
-      transform:translateY(-50%);
-      height:40px;
-      width:100px;
-      border-radius:22px;
-      background:linear-gradient(180deg, rgba(255,46,46,.22), rgba(0,0,0,.5));
-      border:1px solid rgba(255,46,46,.45);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 18px rgba(0,0,0,.35);
-      transition:left .28s cubic-bezier(.22,.61,.36,1), width .28s ease;
-      z-index:1;
-      left:8px;
-    }
-    .nav .item{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;color:#8a5858;font-size:11px;cursor:pointer;transition:.18s}
-    .nav .item .ico{font-size:18px}
-    .nav .item.active{color:var(--text);transform:scale(1.05)}
-
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:70;padding:16px}
-    .overlay.show{display:flex}
-    .overlay video{max-width:100%;width:100%;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.85);}
-    .overlay-title{font-size:14px;margin-bottom:8px}
-    .overlay-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:999px;border:none;background:#bf0000;color:#fff;font-size:20px;cursor:pointer}
-
-    @media (max-width:520px){
-      .card{padding:20px 16px 16px}
-      h1{font-size:20px}
-    }
   </style>
 </head>
 <body>
@@ -231,688 +109,27 @@
 
   <div class="wrapper">
     <div class="card">
-      <div class="badge"><span class="dot"></span><strong>THUYAAUNGZAW</strong></div>
+      <div class="badge"><span class="dot"></span><strong>Maintenance Notice</strong></div>
 
-      <section id="view-home" class="view active">
-        <h1>Video & MP3 Downloader</h1>
-        <p class="sub">Paste a <b>TikTok</b>, <b>Facebook</b>, <b>YouTube</b> or <b> Instagram </b> link. Choose <b>Video</b> or <b>MP3</b> and download directly.</p>
-
-        <div class="chips">
-          <span class="chip"><span class="sm-dot"></span>TikTok / Facebook / YouTube / Instagram</span>
-          <span class="chip"><span class="sm-dot"></span>MP4 + MP3 (audio only)</span>
-          <span class="chip"><span class="sm-dot"></span>Offline library in Files</span>
-        </div>
-
-        <label for="url">Video URL</label>
-        <div class="inwrap">
-          <input id="url" type="url" placeholder="Paste a TikTok, Facebook ,YouTube link or Instagram…" autocomplete="off">
-          <span id="service-pill" class="pill">AUTO DETECT</span>
-        </div>
-
-        <select id="quality"></select>
-
-        <button id="download-btn" class="btn" type="button">💟 Download / Convert 💟</button>
-
-        <div id="status" class="status">Step 1 – Paste • Step 2 – Choose quality/MP3 • Step 3 – Download ⬇</div>
-        <div id="result" class="result"></div>
-
-        <div class="footer">
-          <span>Developer by <strong>ThuYaAungZaw</strong></span>
-          <a href="https://www.facebook.com/thura.aungzaw.69" target="_blank" rel="noopener">Facebook</a>
-        </div>
-      </section>
-
-      <section id="view-tasks" class="view">
-        <h1>Tasks</h1>
-        <p class="sub">Active downloads and recent history.</p>
-        <div id="tasks-list" class="tasks"></div>
-      </section>
-
-      <section id="view-files" class="view">
-        <h1>Files (Offline)</h1>
-        <p class="sub">Finished downloads live here. Works even when you’re offline.</p>
-
-        <div class="filters">
-          <button class="fchip active" data-filter="all">All</button>
-          <button class="fchip" data-filter="video">Videos</button>
-          <button class="fchip" data-filter="audio">Music</button>
-        </div>
-
-        <div id="files-list" class="files"></div>
-      </section>
-    </div>
-  </div>
-
-  <div id="mini" class="mini hidden" aria-live="polite">
-    <div class="cover" id="mini-cover">🎵</div>
-    <div class="mcol">
-      <div class="title" id="mini-title">—</div>
-      <div class="bar"><div id="mini-bar" class="barin"></div></div>
-    </div>
-    <div class="actions">
-      <button class="icon" data-act="back10">⏪</button>
-      <button class="icon" data-act="toggle" id="mini-toggle">⏯</button>
-      <button class="icon" data-act="fwd10">⏩</button>
-      <button class="icon" data-act="close">✕</button>
-    </div>
-  </div>
-
-  <nav class="nav" id="nav">
-    <div class="pill" id="nav-pill"></div>
-    <div class="item active" data-tab="home"><span class="ico">🏠</span><span>Home</span></div>
-    <div class="item" data-tab="tasks"><span class="ico">📥</span><span>Tasks</span></div>
-    <div class="item" data-tab="files"><span class="ico">📂</span><span>Files</span></div>
-  </nav>
-
-  <div id="video-overlay" class="overlay">
-    <button class="overlay-close" type="button" onclick="closeVideoOverlay()">✕</button>
-    <div class="overlay-title" id="video-title"></div>
-    <video id="offline-video" controls playsinline webkit-playsinline></video>
-  </div>
- <script>
-// IMPORTANT: This must match your VPS Domain or IP
-const API_BASE ="https://thuyaaungzaw.carder.cloud";
-const SPECIAL_AUDIO_FORMAT = "bestaudio[ext=m4a]/bestaudio";
-
-const urlInput = document.getElementById("url");
-const servicePill = document.getElementById("service-pill");
-const statusEl = document.getElementById("status");
-const resultEl = document.getElementById("result");
-const downloadBtn = document.getElementById("download-btn");
-const qualitySelect = document.getElementById("quality");
-
-const tasksEl = document.getElementById("tasks-list");
-const filesEl = document.getElementById("files-list");
-const filterChips = document.querySelectorAll(".fchip");
-
-const views = {
-  home: document.getElementById("view-home"),
-  tasks: document.getElementById("view-tasks"),
-  files: document.getElementById("view-files")
-};
-
-const nav = document.getElementById("nav");
-const navItems = nav.querySelectorAll(".item");
-const navPill = document.getElementById("nav-pill");
-
-const mini = document.getElementById("mini");
-const miniTitle = document.getElementById("mini-title");
-const miniBar = document.getElementById("mini-bar");
-const miniToggle = document.getElementById("mini-toggle");
-const miniCover = document.getElementById("mini-cover");
-
-const videoOverlay = document.getElementById("video-overlay");
-const offlineVideo = document.getElementById("offline-video");
-const videoTitle = document.getElementById("video-title");
-
-const audio = new Audio();
-audio.preload = "metadata";
-
-let lastFormats = [];
-let lastUrl = "";
-let tasks = [];
-let filesFilter = "all";
-let db = null;
-let currentFile = null;
-let rafId = null;
-let currentVideoUrl = null;
-
-// --------------------------------------------------
-// Helpers
-// --------------------------------------------------
-function setStatus(msg, err = false) {
-  statusEl.textContent = msg;
-  statusEl.classList.toggle("error", !!err);
-}
-
-function esc(s) {
-  return (s || "").replace(/[&<>\"']/g, m => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "\"": "&quot;",
-    "'": "&#039;"
-  }[m]));
-}
-
-function detectService(u) {
-  if (!u) return "AUTO DETECT";
-  u = u.toLowerCase();
-  if (u.includes("tiktok")) return "TikTok";
-  if (u.includes("facebook") || u.includes("fb.watch")) return "Facebook";
-  if (u.includes("youtube") || u.includes("youtu.be")) return "YouTube";
-  if (u.includes("instagram") || u.includes("instagram")) return "Instagram";
-  return "Unknown Error";
-}
-
-urlInput.addEventListener("input", () => {
-  servicePill.textContent = detectService(urlInput.value.trim());
-  lastFormats = [];
-  lastUrl = "";
-  qualitySelect.style.display = "none";
-  qualitySelect.innerHTML = "";
-  resultEl.style.display = "none";
-  setStatus("Paste a link…");
-});
-
-// --------------------------------------------------
-// IndexedDB
-// --------------------------------------------------
-function openDB() {
-  if (db) return Promise.resolve(db);
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open("kaneki_downloader", 1);
-    req.onupgradeneeded = (e) => {
-      const d = e.target.result;
-      if (!d.objectStoreNames.contains("files")) {
-        const s = d.createObjectStore("files", { keyPath: "id", autoIncrement: true });
-        s.createIndex("by_category", "category", { unique: false });
-        s.createIndex("by_createdAt", "createdAt", { unique: false });
-      }
-    };
-    req.onsuccess = (e) => {
-      db = e.target.result;
-      resolve(db);
-    };
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function dbAdd(rec) {
-  const d = await openDB();
-  return new Promise((res, rej) => {
-    const tx = d.transaction("files", "readwrite");
-    tx.objectStore("files").add(rec).onsuccess = (ev) => res(ev.target.result);
-    tx.onerror = () => rej(tx.error);
-  });
-}
-
-async function dbAll() {
-  const d = await openDB();
-  return new Promise((res, rej) => {
-    const tx = d.transaction("files", "readonly");
-    tx.objectStore("files").getAll().onsuccess = (ev) => res(ev.target.result || []);
-    tx.onerror = () => rej(tx.error);
-  });
-}
-
-async function dbGet(id) {
-  const d = await openDB();
-  return new Promise((res, rej) => {
-    const tx = d.transaction("files", "readonly");
-    tx.objectStore("files").get(id).onsuccess = (ev) => res(ev.target.result || null);
-    tx.onerror = () => rej(tx.error);
-  });
-}
-
-async function dbDel(id) {
-  const d = await openDB();
-  return new Promise((res, rej) => {
-    const tx = d.transaction("files", "readwrite");
-    tx.objectStore("files").delete(id).onsuccess = () => res();
-    tx.onerror = () => rej(tx.error);
-  });
-}
-
-// --------------------------------------------------
-// Nav + Tabs
-// --------------------------------------------------
-function updateNavPill(tab) {
-  const active = [...navItems].find(i => i.dataset.tab === tab);
-  if (!active) return;
-  const itemWidth = active.offsetWidth;
-  const pillWidth = itemWidth + 16;
-  const left = active.offsetLeft + (itemWidth - pillWidth) / 2;
-  navPill.style.width = pillWidth + "px";
-  navPill.style.left = left + "px";
-}
-
-function activateTab(tab) {
-  Object.keys(views).forEach(k => views[k].classList.toggle("active", k === tab));
-  navItems.forEach(i => i.classList.toggle("active", i.dataset.tab === tab));
-  updateNavPill(tab);
-  if (tab === "files") loadFilesUI();
-}
-
-// Desktop + Phone both work
-navItems.forEach(item => {
-  item.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const tab = item.dataset.tab;
-    activateTab(tab);
-    requestAnimationFrame(() => updateNavPill(tab));
-  });
-});
-
-window.addEventListener("resize", () => {
-  const active = [...navItems].find(i => i.classList.contains("active"));
-  if (active) updateNavPill(active.dataset.tab);
-});
-
-// --------------------------------------------------
-// Filters (All / Video / Music)
-// --------------------------------------------------
-filterChips.forEach(c => {
-  c.addEventListener("click", () => {
-    filterChips.forEach(x => x.classList.remove("active"));
-    c.classList.add("active");
-    filesFilter = c.dataset.filter || "all";
-    loadFilesUI();
-  });
-});
-
-// --------------------------------------------------
-// Formats
-// --------------------------------------------------
-async function fetchFormats(u) {
-  // Use API_BASE constant
-  const r = await fetch(API_BASE + "/formats?url=" + encodeURIComponent(u));
-
-  const txt = await r.text();
-  try {
-    const d = JSON.parse(txt);
-    return d.formats || [];
-  } catch {
-    return [];
-  }
-}
-
-function prettyLabel(label) {
-  if (!label) return "MP4";
-  const l = label.toLowerCase();
-  if (l === "sd" || l.startsWith("sd")) return "480p";
-  if (l === "hd" || l.startsWith("hd")) return "720p";
-  return label;
-}
-
-function populateFormats(fs) {
-  lastFormats = [
-    { id: SPECIAL_AUDIO_FORMAT, label: "🎵 MP3 / Audio only", category: "audio" }
-  ];
-
-  fs.forEach(f => {
-    lastFormats.push({
-      id: f.format_id,
-      label: prettyLabel(f.label),
-      category: "video"
-    });
-  });
-
-  qualitySelect.innerHTML = "";
-  lastFormats.forEach(f => {
-    const o = document.createElement("option");
-    o.value = f.id;
-    o.textContent = f.label;
-    o.dataset.category = f.category;
-    qualitySelect.appendChild(o);
-  });
-
-  qualitySelect.style.display = "block";
-}
-
-// --------------------------------------------------
-// Mini audio player
-// --------------------------------------------------
-function startMiniFromRecord(file) {
-  const blob = file.data;
-  const url = URL.createObjectURL(blob);
-  if (currentFile?.urlObject) URL.revokeObjectURL(currentFile.urlObject);
-
-  currentFile = { id: file.id, title: file.title, urlObject: url };
-  miniTitle.textContent = currentFile.title || "Audio";
-  miniCover.textContent = "🎵";
-  audio.src = url;
-  audio.play().catch(() => {});
-  showMini();
-}
-
-function showMini() {
-  mini.classList.remove("hidden");
-  miniToggle.textContent = "⏸";
-  if (rafId) cancelAnimationFrame(rafId);
-
-  const loop = () => {
-    if (audio.duration && isFinite(audio.duration)) {
-      miniBar.style.width = ((audio.currentTime / audio.duration) * 100) + "%";
-    } else {
-      miniBar.style.width = "0%";
-    }
-    rafId = requestAnimationFrame(loop);
-  };
-  loop();
-}
-
-function hideMini() {
-  mini.classList.add("hidden");
-  miniBar.style.width = "0%";
-  if (rafId) cancelAnimationFrame(rafId);
-  if (currentFile?.urlObject) URL.revokeObjectURL(currentFile.urlObject);
-  currentFile = null;
-  audio.pause();
-  audio.removeAttribute("src");
-  audio.load();
-}
-
-mini.addEventListener("click", e => {
-  const b = e.target.closest("[data-act]");
-  if (!b) return;
-  const act = b.dataset.act;
-  if (act === "toggle") {
-    if (audio.paused) {
-      audio.play();
-      miniToggle.textContent = "⏸";
-    } else {
-      audio.pause();
-      miniToggle.textContent = "▶";
-    }
-  } else if (act === "back10") {
-    audio.currentTime = Math.max(0, audio.currentTime - 10);
-  } else if (act === "fwd10") {
-    audio.currentTime = Math.min(audio.duration || audio.currentTime + 10, audio.currentTime + 10);
-  } else if (act === "close") {
-    hideMini();
-  }
-});
-
-audio.addEventListener("ended", () => {
-  miniToggle.textContent = "▶";
-});
-
-// --------------------------------------------------
-// Video overlay
-// --------------------------------------------------
-function openVideoFromRecord(file) {
-  let blob;
-  if (file.data instanceof Blob) {
-    blob = file.data;
-  } else if (file.data && file.data.buffer) {
-    blob = new Blob([file.data.buffer], { type: file.mime || "video/mp4" });
-  } else {
-    blob = new Blob([file.data], { type: file.mime || "video/mp4" });
-  }
-
-  if (currentVideoUrl) {
-    URL.revokeObjectURL(currentVideoUrl);
-    currentVideoUrl = null;
-  }
-
-  const url = URL.createObjectURL(blob);
-  currentVideoUrl = url;
-
-  videoTitle.textContent = file.title || file.filename || "Video";
-  offlineVideo.src = url;
-  offlineVideo.load();
-  videoOverlay.classList.add("show");
-  offlineVideo.play().catch(() => {});
-}
-
-function closeVideoOverlay() {
-  videoOverlay.classList.remove("show");
-  offlineVideo.pause();
-  offlineVideo.removeAttribute("src");
-  offlineVideo.load();
-
-  if (currentVideoUrl) {
-    URL.revokeObjectURL(currentVideoUrl);
-    currentVideoUrl = null;
-  }
-}
-window.closeVideoOverlay = closeVideoOverlay;
-
-// --------------------------------------------------
-// Files UI
-// --------------------------------------------------
-async function loadFilesUI() {
-  try {
-    const all = await dbAll();
-    if (!all.length) {
-      filesEl.innerHTML = '<div class="empty">No saved files yet.</div>';
-      return;
-    }
-
-    const sorted = all.sort((a, b) => b.createdAt - a.createdAt);
-    const list = filesFilter === "all" ? sorted : sorted.filter(f => f.category === filesFilter);
-
-    if (!list.length) {
-      filesEl.innerHTML = '<div class="empty">No files in this category.</div>';
-      return;
-    }
-
-    filesEl.innerHTML = list.map(f => {
-      const mb = f.size ? (f.size / (1024 * 1024)).toFixed(1) : "?";
-      const label = f.category === "audio" ? "Music" : "Video";
-      return `
-        <div class="file" data-id="${f.id}">
-          <div class="fmain">
-            <div class="ftitle">${esc(f.title || f.filename || "Untitled")}</div>
-            <div class="fmeta">${label} · ${mb} MB</div>
-          </div>
-          <div class="factions">
-            <button class="gbtn" data-act="play">Play</button>
-            <button class="gbtn" data-act="save">Save</button>
-            <button class="gbtn" data-act="del">✕</button>
-          </div>
-        </div>
-      `;
-    }).join("");
-  } catch (e) {
-    console.error(e);
-    filesEl.innerHTML = '<div class="empty">Storage not available.</div>';
-  }
-}
-
-filesEl.addEventListener("click", async (e) => {
-  const btn = e.target.closest(".gbtn");
-  if (!btn) return;
-  const id = Number(btn.closest(".file").dataset.id);
-  const f = await dbGet(id);
-  if (!f) return;
-
-  if (btn.dataset.act === "play") {
-    if (f.category === "audio") startMiniFromRecord(f);
-    else openVideoFromRecord(f);
-  } else if (btn.dataset.act === "save") {
-    const url = URL.createObjectURL(f.data);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = f.filename || (f.category === "audio" ? "audio.mp3" : "video.mp4");
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  } else if (btn.dataset.act === "del") {
-    await dbDel(id);
-    if (currentFile && currentFile.id === id) hideMini();
-    loadFilesUI();
-  }
-});
-
-// --------------------------------------------------
-// Tasks
-// --------------------------------------------------
-function renderTasks() {
-  if (!tasks.length) {
-    tasksEl.innerHTML = '<div class="empty">No downloads yet.</div>';
-    return;
-  }
-  tasksEl.innerHTML = tasks.slice().sort((a, b) => b.createdAt - a.createdAt).map(t => {
-    const pct = Math.max(0, Math.min(100, t.progress | 0));
-    return `
-      <div class="task">
-        <div class="tasktop">
-          <div class="ttitle">${esc(t.title || t.filename || "Download")}</div>
-          <div class="tmeta">${t.category === "audio" ? "MP3" : "Video"}</div>
-        </div>
-        <div class="tmeta">${t.status || "Queued"} · ${pct}%</div>
-        <div class="pbar"><div class="pin" style="width:${pct}%"></div></div>
+      <h1>Service Moved</h1>
+      
+      <div class="notice-box">
+        <p class="sub">
+            ဒီ Website အသုံးပြုမှုကို ခေတ္တရပ်နားထားပါသည်။ ပိုမိုမြန်ဆန်ကောင်းမွန်သော Service ကို ရယူနိုင်ရန် ကျွန်ုပ်တို့၏ <b>Telegram Bot</b> တွင် အသုံးပြုပေးပါရန် မေတ္တာရပ်ခံအပ်ပါသည်။
+            <span class="bot-id">@thuya_videodownloader_bot</span>
+        </p>
       </div>
-    `;
-  }).join("");
-}
 
-function patchTask(id, patch) {
-  const t = tasks.find(x => x.id === id);
-  if (t) Object.assign(t, patch);
-  renderTasks();
-}
+      <a href="https://t.me/thuya_videodownloader_bot" class="btn">
+        <span>Go to Telegram Bot</span>
+        <span style="font-size: 20px;">🚀</span>
+      </a>
 
-// --------------------------------------------------
-// Download flow
-// --------------------------------------------------
-async function handleClick() {
-  const url = urlInput.value.trim();
-  if (!url) {
-    setStatus("Paste a video link first.", true);
-    return;
-  }
-
-  // first click => load formats
-  if (!lastFormats.length || lastUrl !== url) {
-    try {
-      setStatus("Checking quality…");
-      const fs = await fetchFormats(url);
-      lastUrl = url;
-      populateFormats(fs);
-      setStatus("Select quality & tap Download again.");
-    } catch (e) {
-      console.error(e);
-      setStatus("Can't load quality (network?).", true);
-    }
-    return;
-  }
-
-  // second click => download
-  const fmtId = qualitySelect.value;
-  const fmt = lastFormats.find(f => f.id === fmtId) || { category: "video", label: "Video" };
-  const category = fmt.category || "video";
-
-  let customBase = prompt(
-    "Enter file name (without extension):",
-    (fmt.label || "my-download").replace(/\W+/g, " ").trim()
-  );
-  if (customBase) customBase = customBase.trim();
-  const ext = category === "audio" ? ".mp3" : ".mp4";
-
-  try {
-    setStatus("Preparing download…");
-    resultEl.style.display = "none";
-
-    const r = await fetch(
-      `${API_BASE}/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(fmtId)}`
-    );
-
-    const txt = await r.text();
-    let data;
-    try {
-      data = JSON.parse(txt);
-    } catch {
-      throw new Error("Invalid JSON from server");
-    }
-
-    if (!data.download_url) throw new Error("Server error");
-
-    // Fix: Ensure we use the correct API base if the returned URL is relative
-    const href = data.download_url.startsWith("http")
-      ? data.download_url
-      : API_BASE + data.download_url;
-
-    let filename = data.filename || (category === "audio" ? "audio.mp3" : "video.mp4");
-    if (customBase) {
-      const safe = customBase.replace(/[\\/:*?"<>|]+/g, "-");
-      filename = safe.endsWith(ext) ? safe : (safe + ext);
-    }
-    const title = customBase || fmt.label || filename;
-
-    await downloadWithTask(href, filename, category, title);
-
-    resultEl.style.display = "block";
-    resultEl.textContent = '✅ Saved to "Files" tab.';
-    setStatus("Download completed.", false);
-  } catch (e) {
-    console.error(e);
-    setStatus("Download failed (network or server).", true);
-  }
-}
-
-async function downloadWithTask(href, filename, category, title) {
-  const id = Date.now() + Math.random();
-  tasks.push({ id, title, filename, category, progress: 0, status: "Starting", createdAt: Date.now() });
-  renderTasks();
-
-  const res = await fetch(href);
-  if (!res.body || !res.body.getReader) {
-    patchTask(id, { status: "Completed (no streaming)", progress: 100 });
-    return;
-  }
-
-  const reader = res.body.getReader();
-  const total = Number(res.headers.get("Content-Length") || "0");
-  const chunks = [];
-  let loaded = 0;
-
-  patchTask(id, { status: "Downloading" });
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    loaded += value.length;
-    if (total) {
-      patchTask(id, { progress: Math.round(loaded / total * 100) });
-    }
-  }
-
-  const type = category === "audio" ? "audio/mpeg" : "video/mp4";
-  const blob = new Blob(chunks, { type });
-
-  patchTask(id, { status: "Saving", progress: 100 });
-
-  let savedId = null;
-  try {
-    savedId = await dbAdd({
-      createdAt: Date.now(),
-      title,
-      filename,
-      size: blob.size,
-      category,
-      mime: type,
-      data: blob
-    });
-  } catch (e) {
-    console.warn("save fail", e);
-  }
-
-  patchTask(id, { status: "Completed" });
-  loadFilesUI();
-
-  if (category === "audio" && savedId != null) {
-    const rec = await dbGet(savedId);
-    if (rec) startMiniFromRecord(rec);
-  }
-}
-
-// --------------------------------------------------
-// Events
-// --------------------------------------------------
-downloadBtn.addEventListener("click", handleClick);
-urlInput.addEventListener("keypress", e => {
-  if (e.key === "Enter") handleClick();
-});
-
-window.addEventListener("load", () => {
-  activateTab("home");
-  updateNavPill("home"); // desktop nav fix
-  loadFilesUI();
-  renderTasks();
-});
-
-// Service worker
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  });
-}
-</script>
-  </body>
+      <div class="footer">
+        <span>Developed by <strong>ThuYaAungZaw</strong></span><br><br>
+        <a href="https://www.facebook.com/thura.aungzaw.69" target="_blank" rel="noopener">Contact Support</a>
+      </div>
+    </div>
+  </div>
+</body>
 </html>
